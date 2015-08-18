@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r32 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r32%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508131554.j7DFsrrk031240%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000003.html">
+   <LINK REL="Next"  HREF="000009.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r32 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r32%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508131554.j7DFsrrk031240%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r32 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Sat Aug 13 17:54:53 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000003.html">[Mihailchess-svn] r31 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+        <LI>Next message: <A HREF="000009.html">[Mihailchess-svn] r33 - in trunk/MihailChessLib/com/mihail: chess clock openings pgn test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4">[ date ]</a>
+              <a href="thread.html#4">[ thread ]</a>
+              <a href="subject.html#4">[ subject ]</a>
+              <a href="author.html#4">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-13 17:54:52 +0200 (Sat, 13 Aug 2005)
+New Revision: 32
+
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+   trunk/MihailChessLib/com/mihail/chess/Posicion.java
+   trunk/MihailChessLib/com/mihail/chess/Tablero2D.java
+Log:
+Probados ligeramente los temas, y corregidos ciertos errores. Anadido el test para el Tablero2D para que se pueda ver algo bonito ya ;)
+
+Modified: trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-13 00:42:21 UTC (rev 31)
++++ trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-13 15:54:52 UTC (rev 32)
+@@ -1,9 +1,9 @@
+ package com.mihail.chess;
+ 
+ import java.awt.Image;
++import java.io.BufferedInputStream;
+ import java.io.File;
+ import java.io.IOException;
+-import java.io.InputStream;
+ import java.net.URISyntaxException;
+ import java.net.URL;
+ import java.util.Enumeration;
+@@ -51,7 +51,7 @@
+ 	/*
+ 	 * Imagenes del tema
+ 	 */
+-	private Image[] pieceImages = new Image[12];
++	private Image[][] pieceImages = new Image[2][6];
+ 	private Image[] casillasImages = new Image[2];
+ 	private Image marco;
+ 	private Image background;
+@@ -95,11 +95,11 @@
+ 	}
+ 	
+ 	public Image getImagePiece(Bando bando, Tipo tipo) {
+-		return pieceImages[bandoToInt(bando) * tipoToInt(tipo)];
++		return pieceImages[bandoToInt(bando)][tipoToInt(tipo)];
+ 	}
+ 	
+ 	public Image getImageCasilla(Bando bando) {
+-		return casillasImages[bandoToInt(bando)-1];
++		return casillasImages[bandoToInt(bando)];
+ 	}
+ 	
+ 	public Image getMarco() {
+@@ -111,7 +111,7 @@
+ 	}
+ 	
+ 	private int bandoToInt(Bando bando) {
+-		return bando == Bando.BLANCO? 1:2;
++		return bando == Bando.BLANCO? 0:1;
+ 	}
+ 	
+ 	private int tipoToInt(Tipo tipo) {
+@@ -138,35 +138,36 @@
+ 			for(Enumeration&lt;? extends ZipEntry&gt; e = zipFile.entries(); e.hasMoreElements();) {
+ 				ZipEntry entry = e.nextElement();
+ 				
+-				InputStream is = zipFile.getInputStream(entry);
++				BufferedInputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+ 				String entryName = entry.getName();
+-				System.out.println(entryName);
+-				byte [] data = new byte[is.available()];
+-				is.read(data);
++				int size = new Long(entry.getSize()).intValue();
++				byte [] data = new byte[size];
++				System.out.println(entryName + &quot; Size: &quot; + size);
++				System.out.println(&quot;Readed data: &quot; + is.read(data, 0, size));
+ 				if(entryName.equals(&quot;reyB.png&quot;)) { // Cargar todas las imagenes en funcion de los nombres
+-					pieceImages[5] = new ImageIcon(data).getImage();
++					pieceImages[0][5] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;reyN.png&quot;)) {
+-					pieceImages[11] = new ImageIcon(data).getImage();
++					pieceImages[1][5] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;damaB.png&quot;)) {
+-					pieceImages[4] = new ImageIcon(data).getImage();
++					pieceImages[0][4] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;damaN.png&quot;)) {
+-					pieceImages[10] = new ImageIcon(data).getImage();
++					pieceImages[1][4] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;torreB.png&quot;)) {
+-					pieceImages[3] = new ImageIcon(data).getImage();
++					pieceImages[0][3] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;torreN.png&quot;)) {
+-					pieceImages[9] = new ImageIcon(data).getImage();
++					pieceImages[1][3]= new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;caballoB.png&quot;)) {
+-					pieceImages[1] = new ImageIcon(data).getImage();
++					pieceImages[0][1] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;caballoN.png&quot;)) {
+-					pieceImages[7] = new ImageIcon(data).getImage();
++					pieceImages[1][1] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;alfilB.png&quot;)) {
+-					pieceImages[2] = new ImageIcon(data).getImage();
++					pieceImages[0][2] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;alfilN.png&quot;)) {
+-					pieceImages[8] = new ImageIcon(data).getImage();
++					pieceImages[1][2] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;peonB.png&quot;)) {
+-					pieceImages[0] = new ImageIcon(data).getImage();
++					pieceImages[0][0] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;peonN.png&quot;)) {
+-					pieceImages[6] = new ImageIcon(data).getImage();
++					pieceImages[1][0] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;casillaB.png&quot;)) {
+ 					casillasImages[0] = new ImageIcon(data).getImage();
+ 				} else if (entryName.equals(&quot;casillaN.png&quot;)) {
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Posicion.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Posicion.java	2005-08-13 00:42:21 UTC (rev 31)
++++ trunk/MihailChessLib/com/mihail/chess/Posicion.java	2005-08-13 15:54:52 UTC (rev 32)
+@@ -269,6 +269,7 @@
+ 	 * @param pos
+ 	 *            Es un String que indica una posicion de juego, siguiendo el
+ 	 *            estandar FEN.
++	 * @see getFEN()
+ 	 */
+ 	public void setPosicion(String pos) {
+ 		char let = 'a';
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Tablero2D.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Tablero2D.java	2005-08-13 00:42:21 UTC (rev 31)
++++ trunk/MihailChessLib/com/mihail/chess/Tablero2D.java	2005-08-13 15:54:52 UTC (rev 32)
+@@ -241,9 +241,8 @@
+ 						continue;
+ 					}
+ 
+-					g.drawImage(theme.getImagePiece(temp.getBando(), temp
+-							.getTipo()), i * TAM, j * TAM, null);
+-
++					//g.drawImage(piezas[bandoToInt(temp.getBando())][tipoToInt(temp.getTipo())], i * TAM, j * TAM, null);
++					g.drawImage(piezas[bandoToInt(temp.getBando())][tipoToInt(temp.getTipo())], i * TAM, j * TAM, TAM, TAM, null);
+ 				}
+ 			}
+ 
+@@ -413,6 +412,21 @@
+ 	public void setTema(BoardTheme theme) {
+ 		this.theme = theme;
+ 	}
++	
++	public void setPieza(Pieza pieza, Casilla casilla) {
++		tablero.setPieza(pieza, casilla);
++		repintarCasilla(casilla.getLetra() - 'a', casilla.getNumero()-'1');
++	}
++	
++	public void borrarPieza(Casilla casilla) {
++		tablero.borrarPieza(casilla);
++		repintarCasilla(casilla.getLetra() - 'a', casilla.getNumero()-'1');
++	}
++	
++	public void setFEN(String pos) {
++		tablero.setPosicion(pos);
++		repaint();
++	}
+ 
+ 	/*
+ 	 * Funcion para repintar la casilla indicada por el punto x, y, que debe ser
+@@ -493,6 +507,42 @@
+ 		}
+ 		return 1;
+ 	}
++	
++	private int tipoToInt(Tipo tipo) {
++		switch(tipo) {
++		case PEON:
++			return 0;
++		case CABALLO:
++			return 1;
++		case ALFIL:
++			return 2;
++		case TORRE:
++			return 3;
++		case DAMA:
++			return 4;
++		case REY:
++			return 5;
++		}
++		return -1;
++	}
++	
++	private Tipo intToTipo(int i) {
++		switch(i) {
++		case 0:
++			return Tipo.PEON;
++		case 1:
++			return Tipo.CABALLO;
++		case 2:
++			return Tipo.ALFIL;
++		case 3:
++			return Tipo.TORRE;
++		case 4:
++			return Tipo.DAMA;
++		case 5:
++			return Tipo.REY;
++		}
++		return null;
++	}
+ 
+ 	/*
+ 	 * Funcion de utilidad que se encarga de redimensionar las imagenes al
+@@ -503,8 +553,8 @@
+ 		MediaTracker media = new MediaTracker(this);
+ 		for (int i = 0; i &lt; 2; i++) {
+ 			for (int j = 0; j &lt; 6; j++) {
+-				piezas[i][j] = theme.getImagePiece(Bando.BLANCO, Tipo.ALFIL)
+-						.getScaledInstance(TAM, TAM, Image.SCALE_SMOOTH);
++				piezas[i][j] = theme.getImagePiece(i==0?Bando.BLANCO:Bando.NEGRO, intToTipo(j))
++						.getScaledInstance(TAM, TAM, Image.SCALE_FAST);
+ 				media.addImage(piezas[i][j], 1);
+ 			}
+ 		}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000003.html">[Mihailchess-svn] r31 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+	<LI>Next message: <A HREF="000009.html">[Mihailchess-svn] r33 - in trunk/MihailChessLib/com/mihail: chess clock openings pgn test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#4">[ date ]</a>
+              <a href="thread.html#4">[ thread ]</a>
+              <a href="subject.html#4">[ subject ]</a>
+              <a href="author.html#4">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

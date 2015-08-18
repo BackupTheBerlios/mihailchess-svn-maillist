@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r29 - trunk/MihailChessLib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r29%20-%20trunk/MihailChessLib&In-Reply-To=%3C200508100038.j7A0c0En018207%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000000.html">
+   <LINK REL="Next"  HREF="000002.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r29 - trunk/MihailChessLib</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r29%20-%20trunk/MihailChessLib&In-Reply-To=%3C200508100038.j7A0c0En018207%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r29 - trunk/MihailChessLib">gauleng at berlios.de
+       </A><BR>
+    <I>Wed Aug 10 02:38:00 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000000.html">[Mihailchess-svn] r28 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+        <LI>Next message: <A HREF="000002.html">[Mihailchess-svn] r30 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1">[ date ]</a>
+              <a href="thread.html#1">[ thread ]</a>
+              <a href="subject.html#1">[ subject ]</a>
+              <a href="author.html#1">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-10 02:37:52 +0200 (Wed, 10 Aug 2005)
+New Revision: 29
+
+Added:
+   trunk/MihailChessLib/estructura.txt
+Modified:
+   trunk/MihailChessLib/TODO
+Log:
+Anadido esto para mas info (Se ruega leer xD)
+
+Modified: trunk/MihailChessLib/TODO
+===================================================================
+--- trunk/MihailChessLib/TODO	2005-08-10 00:30:19 UTC (rev 28)
++++ trunk/MihailChessLib/TODO	2005-08-10 00:37:52 UTC (rev 29)
+@@ -1,4 +1,4 @@
+ - Cambiar nombre metodo Casilla.add
+ - Cambiar nombre clase TablaHash
+ - En vez de usar int clave en los Diccionarios, usar Posicion posicion.
+-- Tratar de usar la clase Casilla lo maximo posible, en vez de dos chars.
+\ No newline at end of file
++- Tratar de usar la clase Casilla lo maximo posible, en vez de dos chars.
+
+Added: trunk/MihailChessLib/estructura.txt
+===================================================================
+--- trunk/MihailChessLib/estructura.txt	2005-08-10 00:30:19 UTC (rev 28)
++++ trunk/MihailChessLib/estructura.txt	2005-08-10 00:37:52 UTC (rev 29)
+@@ -0,0 +1,45 @@
++com.mihail.chess:
++
++ArbolVariantes
++Casilla
++DiccionarioPosiciones
++Logica
++Movimiento
++Pieza
++Posicion
++VectorDireccion
++
++Reloj
++RelojException
++
++Partida
++
++com.mihail.util:
++TablaMovimientosModel
++FiltroArchivos
++IPTextField
++Renderers ??
++
++com.mihail.ui:
++Tablero2D
++TableroGrafico
++RelojDigital
++PanelMovimientos
++
++=================================
++Posible solucion a las coronaciones y otros problemas de la logica:
++
++A&#241;adir una nueva clase tipo BoardListener, que se encarga de gestionar las
++acciones que dependen de la interfaz.
++
++Los metodos que tendria esta nueva clase:
++
++promotionEvent: Se llamaria cuando hay coronacion. El escuchador
++cambiaria los valores adecuados de la logica para coronar a lo deseado.
++
++avanzarEvent retrocederEvent (y en spanglish por supuesto): Se ejecutaria
++en los casos que se ordena a la logica avanzar y retroceder en la partida,
++y existen variantes alternativas a la principal. La mision del escuchador
++seria determinar que variante se elige.
++
++Podrian existir mas situaciones que dependen del uso de la logica?
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000000.html">[Mihailchess-svn] r28 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+	<LI>Next message: <A HREF="000002.html">[Mihailchess-svn] r30 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1">[ date ]</a>
+              <a href="thread.html#1">[ thread ]</a>
+              <a href="subject.html#1">[ subject ]</a>
+              <a href="author.html#1">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,364 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r34 - trunk/MihailChessLib/com/mihail/pgn
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r34%20-%20trunk/MihailChessLib/com/mihail/pgn&In-Reply-To=%3C200508141237.j7ECbJWY001663%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000009.html">
+   <LINK REL="Next"  HREF="000010.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r34 - trunk/MihailChessLib/com/mihail/pgn</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r34%20-%20trunk/MihailChessLib/com/mihail/pgn&In-Reply-To=%3C200508141237.j7ECbJWY001663%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r34 - trunk/MihailChessLib/com/mihail/pgn">gauleng at berlios.de
+       </A><BR>
+    <I>Sun Aug 14 14:37:19 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000009.html">[Mihailchess-svn] r33 - in trunk/MihailChessLib/com/mihail: chess clock openings pgn test
+</A></li>
+        <LI>Next message: <A HREF="000010.html">[Mihailchess-svn] r35 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5">[ date ]</a>
+              <a href="thread.html#5">[ thread ]</a>
+              <a href="subject.html#5">[ subject ]</a>
+              <a href="author.html#5">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-14 14:37:18 +0200 (Sun, 14 Aug 2005)
+New Revision: 34
+
+Added:
+   trunk/MihailChessLib/com/mihail/pgn/Game.java
+   trunk/MihailChessLib/com/mihail/pgn/Parser.java
+Removed:
+   trunk/MihailChessLib/com/mihail/pgn/Analizador.java
+   trunk/MihailChessLib/com/mihail/pgn/Partida.java
+Log:
+Un olvido de la primer
+
+Deleted: trunk/MihailChessLib/com/mihail/pgn/Analizador.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/pgn/Analizador.java	2005-08-14 12:21:56 UTC (rev 33)
++++ trunk/MihailChessLib/com/mihail/pgn/Analizador.java	2005-08-14 12:37:18 UTC (rev 34)
+@@ -1,64 +0,0 @@
+-package com.mihail.pgn;
+-
+-import java.io.IOException;
+-import java.util.ArrayList;
+-
+-/**
+- * Clase que se encarga de cargar y guardar partidas en diferentes formatos. Por
+- * ahora soportamos formato PGN, pero en un futuro se soportara formato MCN
+- * (Markup Chess Notation) basado en XML, y quien sabe si alguno mas.
+- * 
+- * @author Pedro Suarez Casal
+- * @author Iago Porto Diaz
+- */
+-public abstract class Analizador {
+-
+-	/**
+-	 * Sirve para almacenar las partidas que se cargar&#225;n.
+-	 */
+-	protected ArrayList&lt;Partida&gt; listaPartidas = new ArrayList&lt;Partida&gt;();
+-
+-	/**
+-	 * Sirve para obtener el numero de partidas que tenemos.
+-	 * 
+-	 * @return El tama&#241;o de la lista de partidas.
+-	 */
+-	public int getTamLista() {
+-		return listaPartidas.size();
+-	}
+-
+-	/**
+-	 * Sirve para obtener una partida en particular.
+-	 * 
+-	 * @param pos
+-	 *            La posicion dentro de la lista de partidas.
+-	 * @return La partida en cuestion.
+-	 */
+-	public Partida getPartida(int pos) {
+-		return listaPartidas.get(pos);
+-	}
+-
+-	/**
+-	 * Sirve para insertar una partida en la lista de partidas.
+-	 * 
+-	 * @param p
+-	 *            La partida en cuestion.
+-	 */
+-	public void insertarPartida(Partida p) {
+-		listaPartidas.add(p);
+-	}
+-
+-	/**
+-	 * Guarda a un archivo las partidas que tengamos en listaPartidas.
+-	 * 
+-	 * @param archivo
+-	 *            El string que representa al archivo donde vamos a guardarlas.
+-	 */
+-	public abstract void guardarArchivo(String archivo) throws IOException;
+-
+-	/**
+-	 * Analiza e interpreta un fichero con partidas con el objetivo de cargarlas
+-	 * a memoria.
+-	 */
+-	public abstract void analizar() throws ParseException;
+-}
+\ No newline at end of file
+
+Copied: trunk/MihailChessLib/com/mihail/pgn/Game.java (from rev 27, trunk/MihailChessLib/com/mihail/pgn/Partida.java)
+===================================================================
+--- trunk/MihailChessLib/com/mihail/pgn/Partida.java	2005-08-07 23:39:10 UTC (rev 27)
++++ trunk/MihailChessLib/com/mihail/pgn/Game.java	2005-08-14 12:37:18 UTC (rev 34)
+@@ -0,0 +1,68 @@
++package com.mihail.pgn;
++
++import java.util.ArrayList;
++
++import com.mihail.chess.Movement;
++
++/**
++ * Esta clase define un objeto partida y sus caracteristicas: evento, sitio,
++ * fecha, jugadores, elo, lista de movimientos y lista de piezas comidas.
++ * 
++ * @author Pedro Suarez Casal
++ * @author Iago Porto Diaz
++ */
++
++public final class Game {
++	public String evento;
++
++	public String sitio;
++
++	public String fecha;
++
++	public String ronda;
++
++	public String jugadorB;
++
++	public String jugadorN;
++
++	public String resultado;
++
++	public int[] elos;
++
++	public String[] titulos;
++
++	public String[] emails;
++
++	public String[] tipos; // Humano o COM
++
++	public String apertura;
++
++	public String variacion;
++
++	public String subVariacion;
++
++	public String ECO;
++
++	public String controlDeTiempo;
++
++	public StringBuffer listaMovimientos = new StringBuffer();
++
++	public ArrayList listaPiezasComidas;
++
++	public String FEN;
++
++	/**
++	 * Este metodo devuelve la lista de movimientos de la partida.
++	 * 
++	 * @return La lista de movimientos de la partida
++	 */
++	public Movement[] getListaMovimientos() {
++		return null;
++	}
++
++	/**
++	 * 
++	 */
++	public void setListaMovimientos(Movement[] listaMovs) {
++	}
++}
+
+Copied: trunk/MihailChessLib/com/mihail/pgn/Parser.java (from rev 27, trunk/MihailChessLib/com/mihail/pgn/Analizador.java)
+===================================================================
+--- trunk/MihailChessLib/com/mihail/pgn/Analizador.java	2005-08-07 23:39:10 UTC (rev 27)
++++ trunk/MihailChessLib/com/mihail/pgn/Parser.java	2005-08-14 12:37:18 UTC (rev 34)
+@@ -0,0 +1,64 @@
++package com.mihail.pgn;
++
++import java.io.IOException;
++import java.util.ArrayList;
++
++/**
++ * Clase que se encarga de cargar y guardar partidas en diferentes formatos. Por
++ * ahora soportamos formato PGN, pero en un futuro se soportara formato MCN
++ * (Markup Chess Notation) basado en XML, y quien sabe si alguno mas.
++ * 
++ * @author Pedro Suarez Casal
++ * @author Iago Porto Diaz
++ */
++public abstract class Parser {
++
++	/**
++	 * Sirve para almacenar las partidas que se cargar&#225;n.
++	 */
++	protected ArrayList&lt;Game&gt; listaPartidas = new ArrayList&lt;Game&gt;();
++
++	/**
++	 * Sirve para obtener el numero de partidas que tenemos.
++	 * 
++	 * @return El tama&#241;o de la lista de partidas.
++	 */
++	public int getTamLista() {
++		return listaPartidas.size();
++	}
++
++	/**
++	 * Sirve para obtener una partida en particular.
++	 * 
++	 * @param pos
++	 *            La posicion dentro de la lista de partidas.
++	 * @return La partida en cuestion.
++	 */
++	public Game getPartida(int pos) {
++		return listaPartidas.get(pos);
++	}
++
++	/**
++	 * Sirve para insertar una partida en la lista de partidas.
++	 * 
++	 * @param p
++	 *            La partida en cuestion.
++	 */
++	public void insertarPartida(Game p) {
++		listaPartidas.add(p);
++	}
++
++	/**
++	 * Guarda a un archivo las partidas que tengamos en listaPartidas.
++	 * 
++	 * @param archivo
++	 *            El string que representa al archivo donde vamos a guardarlas.
++	 */
++	public abstract void guardarArchivo(String archivo) throws IOException;
++
++	/**
++	 * Analiza e interpreta un fichero con partidas con el objetivo de cargarlas
++	 * a memoria.
++	 */
++	public abstract void analizar() throws ParseException;
++}
+\ No newline at end of file
+
+Deleted: trunk/MihailChessLib/com/mihail/pgn/Partida.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/pgn/Partida.java	2005-08-14 12:21:56 UTC (rev 33)
++++ trunk/MihailChessLib/com/mihail/pgn/Partida.java	2005-08-14 12:37:18 UTC (rev 34)
+@@ -1,68 +0,0 @@
+-package com.mihail.pgn;
+-
+-import java.util.ArrayList;
+-
+-import com.mihail.chess.Movimiento;
+-
+-/**
+- * Esta clase define un objeto partida y sus caracteristicas: evento, sitio,
+- * fecha, jugadores, elo, lista de movimientos y lista de piezas comidas.
+- * 
+- * @author Pedro Suarez Casal
+- * @author Iago Porto Diaz
+- */
+-
+-public final class Partida {
+-	public String evento;
+-
+-	public String sitio;
+-
+-	public String fecha;
+-
+-	public String ronda;
+-
+-	public String jugadorB;
+-
+-	public String jugadorN;
+-
+-	public String resultado;
+-
+-	public int[] elos;
+-
+-	public String[] titulos;
+-
+-	public String[] emails;
+-
+-	public String[] tipos; // Humano o COM
+-
+-	public String apertura;
+-
+-	public String variacion;
+-
+-	public String subVariacion;
+-
+-	public String ECO;
+-
+-	public String controlDeTiempo;
+-
+-	public StringBuffer listaMovimientos = new StringBuffer();
+-
+-	public ArrayList listaPiezasComidas;
+-
+-	public String FEN;
+-
+-	/**
+-	 * Este metodo devuelve la lista de movimientos de la partida.
+-	 * 
+-	 * @return La lista de movimientos de la partida
+-	 */
+-	public Movimiento[] getListaMovimientos() {
+-		return null;
+-	}
+-
+-	/**
+-	 * 
+-	 */
+-	public void setListaMovimientos(Movimiento[] listaMovs) {
+-	}
+-}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000009.html">[Mihailchess-svn] r33 - in trunk/MihailChessLib/com/mihail: chess clock openings pgn test
+</A></li>
+	<LI>Next message: <A HREF="000010.html">[Mihailchess-svn] r35 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#5">[ date ]</a>
+              <a href="thread.html#5">[ thread ]</a>
+              <a href="subject.html#5">[ subject ]</a>
+              <a href="author.html#5">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

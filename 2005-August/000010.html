@@ -1,0 +1,1686 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r35 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r35%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508141312.j7EDC5NM002655%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000005.html">
+   <LINK REL="Next"  HREF="000011.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r35 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r35%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508141312.j7EDC5NM002655%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r35 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Sun Aug 14 15:12:05 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000005.html">[Mihailchess-svn] r34 - trunk/MihailChessLib/com/mihail/pgn
+</A></li>
+        <LI>Next message: <A HREF="000011.html">[Mihailchess-svn] r36 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10">[ date ]</a>
+              <a href="thread.html#10">[ thread ]</a>
+              <a href="subject.html#10">[ subject ]</a>
+              <a href="author.html#10">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-14 15:12:03 +0200 (Sun, 14 Aug 2005)
+New Revision: 35
+
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/Board.java
+   trunk/MihailChessLib/com/mihail/chess/Board2D.java
+   trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+   trunk/MihailChessLib/com/mihail/chess/Movement.java
+   trunk/MihailChessLib/com/mihail/chess/Piece.java
+   trunk/MihailChessLib/com/mihail/chess/Position.java
+   trunk/MihailChessLib/com/mihail/chess/VariationsTree.java
+Log:
+A riesgo de que vuelva a pasar lo mismo, envio traducciones de poco en poco
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-14 12:37:18 UTC (rev 34)
++++ trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-14 13:12:03 UTC (rev 35)
+@@ -6,16 +6,16 @@
+ 
+ public class Board {
+ 
+-	public static enum Bando {
+-		BLANCO, NEGRO;
++	public static enum Side {
++		WHITE, BLACK;
+ 
+-		public boolean equals(Bando b) {
++		public boolean equals(Side b) {
+ 			return this == b;
+ 		}
+ 	}
+ 
+-	public static enum Resultado {
+-		JAQUE_MATE_BLANCO, JAQUE_MATE_NEGRO, TABLAS_REPETICION, TABLAS_50_MOV, TABLAS_INSUF_MATERIAL, TABLAS_AHOGADO
++	public static enum Result {
++		WHITE_CHECKMATE, BLACK_CHECKMATE, REPETITION_DRAW, FIFTY_MOV_DRAW, INSUF_MATERIAL_DRAW, STALEMATE
+ 	}
+ 
+ 	// public static final int JAQUE_MATE_BLANCO = 6;
+@@ -63,14 +63,14 @@
+ 	public Board(Position posInicial) {
+ 		movimientos = new VariationsTree();
+ 		posicion = posInicial;
+-		hash.insertar(posicion.getClavePosicion());
++		hash.insertar(posicion.getPositionKey());
+ 	}
+ 
+ 	/**
+ 	 * Reinicia la posicion del tablero a la posicion inicial.
+ 	 */
+-	public void reiniciarTablero() {
+-		posicion.setPosicion(Position.CAD_INICIAL);
++	public void restartBoard() {
++		posicion.setFEN(Position.INITIAL_POSITION_FEN);
+ 	}
+ 
+ 	/**
+@@ -80,7 +80,7 @@
+ 	 *            Caracter que indica el tipo de pieza a coronar (C, A, T, D).
+ 	 */
+ 
+-	public void setCoronacion(Tipo c) {
++	public void setPromotionPiece(Tipo c) {
+ 		coronar = c;
+ 	}
+ 
+@@ -90,11 +90,11 @@
+ 	 * @return Un entero, el numero en cuestion.
+ 	 */
+ 
+-	public int getNumTotalMovimientos() {
++	public int getTotalFullmoveNumber() {
+ 		return movimientos.getNumMovimientos();
+ 	}
+ 
+-	public Position getPosicion() {
++	public Position getPosition() {
+ 		return this.posicion;
+ 	}
+ 
+@@ -107,19 +107,19 @@
+ 	 *         'T' -&gt; Tablas &lt;BR&gt;
+ 	 *         '\0' -&gt; Partida Inacabada o Resultado Desconocido
+ 	 */
+-	public Resultado getResultado() {
++	public Result getResult() {
+ 		return movimientos.getLastMovimiento().getFinPartida();
+ 	}
+ 
+ 	/**
+ 	 * Calcula los movimientos validos para todas las piezas del tablero.
+ 	 */
+-	public void calcularMovimientos() {
++	public void calculateMoves() {
+ 		for (char i = 'a'; i &lt;= 'h'; i++) {
+ 			for (char j = '1'; j &lt;= '8'; j++) {
+ 				Piece p = posicion.getPieza(i, j);
+ 				if (p != null) {
+-					if (!Piece.esBandoContrario(posicion.getTurno(), p)) {
++					if (!Piece.esBandoContrario(posicion.getTurn(), p)) {
+ 						calcularMovimientos(p);
+ 					}
+ 				}
+@@ -140,18 +140,18 @@
+ 		case PEON:
+ 			// Peon
+ 			// Peon blanco
+-			if (pieza.getBando() == Bando.BLANCO) {
++			if (pieza.getBando() == Side.WHITE) {
+ 				// Movimiento hacia delante
+ 				// Hacemos dos iteraciones, una para el caso de que avance
+ 				// una casilla, otra para el caso de que avance dos
+-				if (posicion.esVacia(pieza.getLetra(),
++				if (posicion.isEmpty(pieza.getLetra(),
+ 						(char) (pieza.getNum() + 1))) {
+ 					if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+ 							.getLetra(), (char) (pieza.getNum() + 1))) {
+ 						pieza.anadirMov(pieza.getLetra(), (char) (pieza
+ 								.getNum() + 1));
+ 						if (pieza.getNum() == '2'
+-								&amp;&amp; posicion.esVacia(pieza.getLetra(),
++								&amp;&amp; posicion.isEmpty(pieza.getLetra(),
+ 										(char) (pieza.getNum() + 2))) {
+ 							if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+ 									.getLetra(), (char) (pieza.getNum() + 2))) {
+@@ -161,17 +161,17 @@
+ 						}
+ 					}
+ 				}
+-				if (posicion.getAlPaso() != '\0'
++				if (posicion.getEnPassant() != '\0'
+ 						&amp;&amp; pieza.getNum() == '5'
+-						&amp;&amp; Math.abs(pieza.getLetra() - posicion.getAlPaso()) == 1) {
+-					pieza.anadirMov(posicion.getAlPaso(), (char) (pieza
++						&amp;&amp; Math.abs(pieza.getLetra() - posicion.getEnPassant()) == 1) {
++					pieza.anadirMov(posicion.getEnPassant(), (char) (pieza
+ 							.getNum() + 1));
+ 				}
+ 				// Movimientos para comer
+ 				try {
+ 					Piece p = posicion.getPieza((char) (pieza.getLetra() + 1),
+ 							(char) (pieza.getNum() + 1));
+-					if (p != null &amp;&amp; p.getBando() == Bando.NEGRO) {
++					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+ 						if (esLegal(pieza.getLetra(), pieza.getNum(),
+ 								(char) (pieza.getLetra() + 1), (char) (pieza
+ 										.getNum() + 1))) {
+@@ -184,7 +184,7 @@
+ 				try {
+ 					Piece p = posicion.getPieza((char) (pieza.getLetra() + 1),
+ 							(char) (pieza.getNum() - 1));
+-					if (p != null &amp;&amp; p.getBando() == Bando.NEGRO) {
++					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+ 						if (esLegal(pieza.getLetra(), pieza.getNum(),
+ 								(char) (pieza.getLetra() - 1), (char) (pieza
+ 										.getNum() + 1))) {
+@@ -197,14 +197,14 @@
+ 			}
+ 			// Peon negro
+ 			else {
+-				if (posicion.esVacia(pieza.getLetra(),
++				if (posicion.isEmpty(pieza.getLetra(),
+ 						(char) (pieza.getNum() - 1))) {
+ 					if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+ 							.getLetra(), (char) (pieza.getNum() - 1))) {
+ 						pieza.anadirMov(pieza.getLetra(), (char) (pieza
+ 								.getNum() - 1));
+ 						if (pieza.getNum() == '7'
+-								&amp;&amp; posicion.esVacia(pieza.getLetra(),
++								&amp;&amp; posicion.isEmpty(pieza.getLetra(),
+ 										(char) (pieza.getNum() - 2))) {
+ 							if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+ 									.getLetra(), (char) (pieza.getNum() - 2))) {
+@@ -214,16 +214,16 @@
+ 						}
+ 					}
+ 				}
+-				if (posicion.getAlPaso() != '\0'
++				if (posicion.getEnPassant() != '\0'
+ 						&amp;&amp; pieza.getNum() == '4'
+-						&amp;&amp; Math.abs(pieza.getLetra() - posicion.getAlPaso()) == 1) {
+-					pieza.anadirMov(posicion.getAlPaso(), (char) (pieza
++						&amp;&amp; Math.abs(pieza.getLetra() - posicion.getEnPassant()) == 1) {
++					pieza.anadirMov(posicion.getEnPassant(), (char) (pieza
+ 							.getNum() - 1));
+ 				}
+ 				try {
+ 					Piece p = posicion.getPieza((char) (pieza.getLetra() - 1),
+ 							(char) (pieza.getNum() + 1));
+-					if (p != null &amp;&amp; p.getBando() == Bando.NEGRO) {
++					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+ 						if (esLegal(pieza.getLetra(), pieza.getNum(),
+ 								(char) (pieza.getLetra() + 1), (char) (pieza
+ 										.getNum() - 1))) {
+@@ -236,7 +236,7 @@
+ 				try {
+ 					Piece p = posicion.getPieza((char) (pieza.getLetra() - 1),
+ 							(char) (pieza.getNum() - 1));
+-					if (p != null &amp;&amp; p.getBando() == Bando.NEGRO) {
++					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+ 						if (esLegal(pieza.getLetra(), pieza.getNum(),
+ 								(char) (pieza.getLetra() - 1), (char) (pieza
+ 										.getNum() - 1))) {
+@@ -309,29 +309,29 @@
+ 				}
+ 			}
+ 
+-			if (posicion.getEnroqueCorto(posicion.getTurno())
+-					&amp;&amp; !esCasillaAtacada(posicion.getKingPosition(posicion
+-							.getTurno()))
+-					&amp;&amp; posicion.esVacia((char) (pieza.getLetra() + 1), pieza
++			if (posicion.getKingsideCastling(posicion.getTurn())
++					&amp;&amp; !isAttackedSquare(posicion.getKingPosition(posicion
++							.getTurn()))
++					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() + 1), pieza
+ 							.getNum())
+-					&amp;&amp; !esCasillaAtacada((char) (pieza.getLetra() + 1), (pieza
++					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() + 1), (pieza
+ 							.getNum()))
+-					&amp;&amp; posicion.esVacia((char) (pieza.getLetra() + 2), pieza
++					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() + 2), pieza
+ 							.getNum())
+-					&amp;&amp; !esCasillaAtacada((char) (pieza.getLetra() + 2), (pieza
++					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() + 2), (pieza
+ 							.getNum()))) {
+ 				pieza.anadirMov((char) (pieza.getLetra() + 2), pieza.getNum());
+ 			}
+-			if (posicion.getEnroqueLargo(posicion.getTurno())
+-					&amp;&amp; !esCasillaAtacada(posicion.getKingPosition(posicion
+-							.getTurno()))
+-					&amp;&amp; posicion.esVacia((char) (pieza.getLetra() - 1), pieza
++			if (posicion.getQueensideCastling(posicion.getTurn())
++					&amp;&amp; !isAttackedSquare(posicion.getKingPosition(posicion
++							.getTurn()))
++					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() - 1), pieza
+ 							.getNum())
+-					&amp;&amp; !esCasillaAtacada((char) (pieza.getLetra() - 1), (pieza
++					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() - 1), (pieza
+ 							.getNum()))
+-					&amp;&amp; posicion.esVacia((char) (pieza.getLetra() - 2), pieza
++					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() - 2), pieza
+ 							.getNum())
+-					&amp;&amp; !esCasillaAtacada((char) (pieza.getLetra() - 2), (pieza
++					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() - 2), (pieza
+ 							.getNum()))) {
+ 				pieza.anadirMov((char) (pieza.getLetra() - 2), pieza.getNum());
+ 			}
+@@ -347,8 +347,8 @@
+ 	 *            Casilla que queremos comprobar si esta siendo atacada
+ 	 * @return Devuelve un booleano indicando si es una casilla atacada o no
+ 	 */
+-	public boolean esCasillaAtacada(Square c) {
+-		return esCasillaAtacada(c.getLetra(), c.getNumero());
++	public boolean isAttackedSquare(Square c) {
++		return isAttackedSquare(c.getLetra(), c.getNumero());
+ 	}
+ 
+ 	/**
+@@ -369,7 +369,7 @@
+ 	 *            atacada
+ 	 * @return Devuelve un booleano indicando si es una casilla atacada o no
+ 	 */
+-	public boolean esCasillaAtacada(char letra, char num) {
++	public boolean isAttackedSquare(char letra, char num) {
+ 		// Primero miro las casillas
+ 		// a salto de caballo. Despues, las verticales, horizontales y
+ 		// diagonales.
+@@ -389,7 +389,7 @@
+ 				Piece p = posicion.getPieza((char) (letra + v.getX()),
+ 						(char) (num + v.getY()));
+ 				if (p != null) {
+-					if (Piece.esBandoContrario(posicion.getTurno(), p)
++					if (Piece.esBandoContrario(posicion.getTurn(), p)
+ 							&amp;&amp; p.getTipo() == Tipo.CABALLO) {
+ 						return true;
+ 					}
+@@ -413,7 +413,7 @@
+ 					numDest = (char) (numDest + v.getY());
+ 					p = posicion.getPieza(letDest, numDest);
+ 				}
+-				if (Piece.esBandoContrario(posicion.getTurno(), p)
++				if (Piece.esBandoContrario(posicion.getTurn(), p)
+ 						&amp;&amp; (p.getTipo() == Tipo.DAMA
+ 								|| p.getTipo() == Tipo.TORRE || (num + v.getY() == numDest
+ 								&amp;&amp; letra + v.getX() == letDest &amp;&amp; p.getTipo() == Tipo.REY))) {
+@@ -436,11 +436,11 @@
+ 					numDest = (char) (numDest + v.getY());
+ 					p = posicion.getPieza(letDest, numDest);
+ 				}
+-				if (Piece.esBandoContrario(posicion.getTurno(), p)
++				if (Piece.esBandoContrario(posicion.getTurn(), p)
+ 						&amp;&amp; (p.getTipo() == Tipo.DAMA
+ 								|| p.getTipo() == Tipo.ALFIL || (num + v.getY() == numDest
+ 								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getTipo() == Tipo.REY || (p
+-								.getTipo() == Tipo.PEON &amp;&amp; p.getBando() == Bando.NEGRO))))) {
++								.getTipo() == Tipo.PEON &amp;&amp; p.getBando() == Side.BLACK))))) {
+ 					return true;
+ 				}
+ 			} catch (ArrayIndexOutOfBoundsException e) {
+@@ -460,11 +460,11 @@
+ 					numDest = (char) (numDest + v.getY());
+ 					p = posicion.getPieza(letDest, numDest);
+ 				}
+-				if (Piece.esBandoContrario(posicion.getTurno(), p)
++				if (Piece.esBandoContrario(posicion.getTurn(), p)
+ 						&amp;&amp; (p.getTipo() == Tipo.DAMA
+ 								|| p.getTipo() == Tipo.ALFIL || (num + v.getY() == numDest
+ 								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getTipo() == Tipo.REY || (p
+-								.getTipo() == Tipo.PEON &amp;&amp; p.getBando() == Bando.BLANCO))))) {
++								.getTipo() == Tipo.PEON &amp;&amp; p.getBando() == Side.WHITE))))) {
+ 					return true;
+ 				}
+ 			} catch (ArrayIndexOutOfBoundsException e) {
+@@ -495,8 +495,8 @@
+ 		Piece temp = posicion.getPieza(letDest, numDest);
+ 		posicion.borrarPiezaInternal(letOrig, numOrig);
+ 		posicion.setPiezaInternal(movida, letDest, numDest);
+-		resultado = esCasillaAtacada(posicion.getKingPosition(posicion
+-				.getTurno()));
++		resultado = isAttackedSquare(posicion.getKingPosition(posicion
++				.getTurn()));
+ 		posicion.borrarPiezaInternal(letDest, numDest);
+ 		posicion.setPiezaInternal(movida, letOrig, numOrig);
+ 		if (temp != null)
+@@ -518,7 +518,7 @@
+ 	 *            Es el numero de la casilla de destino
+ 	 * @return Devuelve un objeto Movimiento o null si no esta permitido.
+ 	 */
+-	public Movement mover(char origenLetra, char origenNum,
++	public Movement move(char origenLetra, char origenNum,
+ 			char destinoLetra, char destinoNum) {
+ 		Piece piezaQueMueve;
+ 		int i;
+@@ -530,7 +530,7 @@
+ 			return null;
+ 		}
+ 
+-		if (Piece.esBandoContrario(posicion.getTurno(), piezaQueMueve)) {
++		if (Piece.esBandoContrario(posicion.getTurn(), piezaQueMueve)) {
+ 			return null;
+ 		}
+ 		if (indice != movimientos.getNumHalfPly())
+@@ -556,39 +556,39 @@
+ 					mov
+ 							.setCasillaDestino(new Square(destinoLetra,
+ 									destinoNum));
+-					mov.setNumeroMovimiento(posicion.getNumeroMovimiento());
+-					mov.setBando(posicion.getTurno());
++					mov.setNumeroMovimiento(posicion.getFullmoveNumber());
++					mov.setBando(posicion.getTurn());
+ 					mov.setTipoPieza(piezaQueMueve.getTipo());
+ 
+ 					// Si se come ponemos el contador a 0
+-					if (!posicion.esVacia(destinoLetra, destinoNum)) {
+-						posicion.setContadorTablas(0);
++					if (!posicion.isEmpty(destinoLetra, destinoNum)) {
++						posicion.setHalfmoveClock(0);
+ 						hash.borrarTabla();
+ 						mov.setCasillaComer(new Square(destinoLetra,
+ 								destinoNum));
+ 						mov.setTipoPiezaComida(posicion.getPieza(destinoLetra,
+ 								destinoNum).getTipo());
+-						posicion.borrarPieza(mov.getCasillaComer());
++						posicion.removePiece(mov.getCasillaComer());
+ 					}
+ 
+ 					// Se hacen los calculos especiales si se trata de un peon
+ 					if (piezaQueMueve.getTipo() == Tipo.PEON) {
+ 						// Se borra la pieza correspondiente si se come al paso
+ 						if (Math.abs(destinoLetra - origenLetra) == 1
+-								&amp;&amp; posicion.esVacia(destinoLetra, destinoNum)) {
++								&amp;&amp; posicion.isEmpty(destinoLetra, destinoNum)) {
+ 							mov.setTipoPiezaComida(posicion.getPieza(
+ 									destinoLetra, origenNum).getTipo());
+ 							mov.setCasillaComer(new Square(destinoLetra,
+ 									origenNum));
+-							posicion.borrarPieza(mov.getCasillaComer());
++							posicion.removePiece(mov.getCasillaComer());
+ 						}
+ 						// Se establece la variable alPaso a su valor
+ 						// correspondiente
+ 						if (Math.abs(destinoNum - origenNum) == 2) {
+-							posicion.setAlPaso(origenLetra);
+-							mov.setAlPaso(posicion.getAlPaso());
++							posicion.setEnPassant(origenLetra);
++							mov.setAlPaso(posicion.getEnPassant());
+ 						} else {
+-							posicion.setAlPaso('\0');
++							posicion.setEnPassant('\0');
+ 						}
+ 						// Coronacion
+ 						if (destinoNum == '1' || destinoNum == '8') {
+@@ -600,7 +600,7 @@
+ 
+ 							mov.setCoronacion(coronar);
+ 						}
+-						posicion.setContadorTablas(0);
++						posicion.setHalfmoveClock(0);
+ 						hash.borrarTabla();
+ 					}
+ 					// Se hacen los calculos especiales si se trata de un rey
+@@ -608,42 +608,42 @@
+ 						// Movemos las torres en caso de enroque
+ 						if ((destinoLetra - origenLetra) == 2) {
+ 							Piece torre = posicion.getPieza('h', origenNum);
+-							posicion.borrarPieza('h', origenNum);
+-							posicion.setPieza(torre, 'f', origenNum);
++							posicion.removePiece('h', origenNum);
++							posicion.setPiece(torre, 'f', origenNum);
+ 						} else {
+ 							if ((destinoLetra - origenLetra) == -2) {
+ 								Piece torre = posicion.getPieza('a', origenNum);
+-								posicion.borrarPieza('a', origenNum);
+-								posicion.setPieza(torre, 'd', origenNum);
++								posicion.removePiece('a', origenNum);
++								posicion.setPiece(torre, 'd', origenNum);
+ 							}
+ 						}
+ 					}
+ 
+-					mov.setContadorTablas(posicion.getContadorTablas());
++					mov.setContadorTablas(posicion.getHalfmoveClock());
+ 					boolean[][] enroque = new boolean[2][2];
+-					enroque[0][0] = posicion.getEnroqueCorto(Bando.BLANCO);
+-					enroque[0][1] = posicion.getEnroqueLargo(Bando.BLANCO);
+-					enroque[1][0] = posicion.getEnroqueCorto(Bando.NEGRO);
+-					enroque[1][1] = posicion.getEnroqueLargo(Bando.NEGRO);
++					enroque[0][0] = posicion.getKingsideCastling(Side.WHITE);
++					enroque[0][1] = posicion.getQueensideCastling(Side.WHITE);
++					enroque[1][0] = posicion.getKingsideCastling(Side.BLACK);
++					enroque[1][1] = posicion.getQueensideCastling(Side.BLACK);
+ 					mov.setEnroque(enroque);
+-					if (posicion.getTurno() == Bando.NEGRO)
+-						posicion.addNumeroMovimiento();
+-					posicion.setTurno();
++					if (posicion.getTurn() == Side.BLACK)
++						posicion.addFullmoveNumber();
++					posicion.setTurn();
+ 
+-					posicion.borrarPieza(origenLetra, origenNum);
+-					posicion.setPieza(piezaQueMueve, destinoLetra, destinoNum);
+-					posicion.addContadorTablas();
+-					calcularMovimientos();
++					posicion.removePiece(origenLetra, origenNum);
++					posicion.setPiece(piezaQueMueve, destinoLetra, destinoNum);
++					posicion.addHalfmoveClock();
++					calculateMoves();
+ 
+-					if (esCasillaAtacada(posicion.getKingPosition(posicion
+-							.getTurno()))) {
++					if (isAttackedSquare(posicion.getKingPosition(posicion
++							.getTurn()))) {
+ 						mov.setJaque(true);
+ 					} else {
+ 						mov.setJaque(false);
+ 					}
+ 					mov.setFinPartida(esFinPartida());
+ 
+-					hash.insertar(posicion.getClavePosicion());
++					hash.insertar(posicion.getPositionKey());
+ 					movimientos.appendMovimiento(mov);
+ 					indice++;
+ 					return mov;
+@@ -661,7 +661,7 @@
+ 	 * 
+ 	 * @return El movimiento al que lleguemos en la lista de movimientos.
+ 	 */
+-	public Movement avanzar() {
++	public Movement goBack() {
+ 		Movement mov;
+ 		Piece piezaQueMueve;
+ 		if (indice &lt; movimientos.getNumHalfPly()) {
+@@ -671,8 +671,8 @@
+ 			if (piezaQueMueve.getTipo() == Tipo.PEON
+ 					&amp;&amp; Math.abs(mov.getCasillaDestino().getLetra()
+ 							- mov.getCasillaOrigen().getLetra()) == 1
+-					&amp;&amp; posicion.esVacia(mov.getCasillaDestino())) {
+-				posicion.borrarPieza(mov.getCasillaComer());
++					&amp;&amp; posicion.isEmpty(mov.getCasillaDestino())) {
++				posicion.removePiece(mov.getCasillaComer());
+ 			}
+ 			// Si se corona
+ 			if (mov.getCoronacion() != null) {
+@@ -686,29 +686,29 @@
+ 				Square destino = mov.getCasillaDestino();
+ 				if ((destino.getLetra() - origen.getLetra()) == 2) {
+ 					Piece torre = posicion.getPieza('h', origen.getNumero());
+-					posicion.borrarPieza('h', origen.getNumero());
+-					posicion.setPieza(torre, 'f', origen.getNumero());
++					posicion.removePiece('h', origen.getNumero());
++					posicion.setPiece(torre, 'f', origen.getNumero());
+ 				} else {
+ 					if ((destino.getLetra() - origen.getLetra()) == -2) {
+ 						Piece torre = posicion
+ 								.getPieza('a', origen.getNumero());
+-						posicion.borrarPieza('a', origen.getNumero());
+-						posicion.setPieza(torre, 'd', origen.getNumero());
++						posicion.removePiece('a', origen.getNumero());
++						posicion.setPiece(torre, 'd', origen.getNumero());
+ 					}
+ 				}
+ 			}
+-			posicion.borrarPieza(mov.getCasillaOrigen());
+-			posicion.setPieza(piezaQueMueve, mov.getCasillaDestino());
+-			posicion.setContadorTablas(mov.getContadorTablas());
++			posicion.removePiece(mov.getCasillaOrigen());
++			posicion.setPiece(piezaQueMueve, mov.getCasillaDestino());
++			posicion.setHalfmoveClock(mov.getContadorTablas());
+ 			boolean[][] enroques = mov.getEnroque();
+-			posicion.setEnroqueCorto(Bando.BLANCO, enroques[0][0]);
+-			posicion.setEnroqueLargo(Bando.BLANCO, enroques[0][1]);
+-			posicion.setEnroqueCorto(Bando.NEGRO, enroques[1][0]);
+-			posicion.setEnroqueLargo(Bando.NEGRO, enroques[1][1]);
+-			posicion.setAlPaso(mov.getAlPaso());
+-			posicion.setTurno();
++			posicion.setKingsideCastling(Side.WHITE, enroques[0][0]);
++			posicion.setQueensideCastling(Side.WHITE, enroques[0][1]);
++			posicion.setKingsideCastling(Side.BLACK, enroques[1][0]);
++			posicion.setQueensideCastling(Side.BLACK, enroques[1][1]);
++			posicion.setEnPassant(mov.getAlPaso());
++			posicion.setTurn();
+ 			indice++;
+-			posicion.setNumeroMovimiento(mov.getNumeroMovimiento());
++			posicion.setFullmoveNumber(mov.getNumeroMovimiento());
+ 			return mov;
+ 		} else {
+ 			return null;
+@@ -720,13 +720,13 @@
+ 	 * 
+ 	 * @return El movimiento al que lleguemos en la lista de movimientos.
+ 	 */
+-	public Movement retroceder() {
++	public Movement goForward() {
+ 		Movement mov;
+ 		Piece piezaQueMueve;
+ 		if (indice &gt; 0) {
+ 			indice--;
+ 			mov = movimientos.getMovimiento(indice);
+-			posicion.setNumeroMovimiento(mov.getNumeroMovimiento());
++			posicion.setFullmoveNumber(mov.getNumeroMovimiento());
+ 			piezaQueMueve = posicion.getPieza(mov.getCasillaDestino());
+ 			if (mov.getCoronacion() != null) {
+ 				piezaQueMueve = new Piece(piezaQueMueve.getBando(), mov
+@@ -738,33 +738,33 @@
+ 				Square destino = mov.getCasillaDestino();
+ 				if ((destino.getLetra() - origen.getLetra()) == 2) {
+ 					Piece torre = posicion.getPieza('h', origen.getNumero());
+-					posicion.borrarPieza('h', origen.getNumero());
+-					posicion.setPieza(torre, 'f', origen.getNumero());
++					posicion.removePiece('h', origen.getNumero());
++					posicion.setPiece(torre, 'f', origen.getNumero());
+ 				} else {
+ 					if ((destino.getLetra() - origen.getLetra()) == -2) {
+ 						Piece torre = posicion
+ 								.getPieza('a', origen.getNumero());
+-						posicion.borrarPieza('a', origen.getNumero());
+-						posicion.setPieza(torre, 'd', origen.getNumero());
++						posicion.removePiece('a', origen.getNumero());
++						posicion.setPiece(torre, 'd', origen.getNumero());
+ 					}
+ 				}
+ 			}
+-			posicion.borrarPieza(mov.getCasillaDestino());
++			posicion.removePiece(mov.getCasillaDestino());
+ 			if (mov.getTipoPiezaComida() != null) {
+-				posicion.setPieza(new Piece(
+-						piezaQueMueve.getBando() == Bando.BLANCO ? Bando.BLANCO
+-								: Bando.NEGRO, mov.getTipoPieza()), mov
++				posicion.setPiece(new Piece(
++						piezaQueMueve.getBando() == Side.WHITE ? Side.WHITE
++								: Side.BLACK, mov.getTipoPieza()), mov
+ 						.getCasillaComer());
+ 			}
+-			posicion.setPieza(piezaQueMueve, mov.getCasillaOrigen());
+-			posicion.setContadorTablas(mov.getContadorTablas());
++			posicion.setPiece(piezaQueMueve, mov.getCasillaOrigen());
++			posicion.setHalfmoveClock(mov.getContadorTablas());
+ 			boolean[][] enroques = mov.getEnroque();
+-			posicion.setEnroqueCorto(Bando.BLANCO, enroques[0][0]);
+-			posicion.setEnroqueLargo(Bando.BLANCO, enroques[0][1]);
+-			posicion.setEnroqueCorto(Bando.NEGRO, enroques[1][0]);
+-			posicion.setEnroqueLargo(Bando.NEGRO, enroques[1][1]);
+-			posicion.setAlPaso(mov.getAlPaso());
+-			posicion.setTurno();
++			posicion.setKingsideCastling(Side.WHITE, enroques[0][0]);
++			posicion.setQueensideCastling(Side.WHITE, enroques[0][1]);
++			posicion.setKingsideCastling(Side.BLACK, enroques[1][0]);
++			posicion.setQueensideCastling(Side.BLACK, enroques[1][1]);
++			posicion.setEnPassant(mov.getAlPaso());
++			posicion.setTurn();
+ 			return mov;
+ 		} else {
+ 			return null;
+@@ -779,20 +779,20 @@
+ 	 *         han dado jaque mate, 'N' si las negras han dado jaque mate o 'T'
+ 	 *         si se produce una situacion de tablas.
+ 	 */
+-	private Resultado esFinPartida() {
++	private Result esFinPartida() {
+ 		Piece pieza;
+-		Resultado devolver = null;
++		Result devolver = null;
+ 		boolean fin = false, fin2 = false, posibleMatInsuf = false;
+ 		char i, j;
+ 		// Tablas por 50 movimientos
+-		if (posicion.getContadorTablas() == 50) {
++		if (posicion.getHalfmoveClock() == 50) {
+ 			fin = true;
+-			devolver = Resultado.TABLAS_50_MOV;
++			devolver = Result.FIFTY_MOV_DRAW;
+ 		}
+ 		// Tablas por repeticion de posiciones
+-		if (hash.getRepeticiones(posicion.getClavePosicion()) == 3) {
++		if (hash.getRepeticiones(posicion.getPositionKey()) == 3) {
+ 			fin = true;
+-			devolver = Resultado.TABLAS_REPETICION;
++			devolver = Result.REPETITION_DRAW;
+ 		}
+ 		// Tablas por material insuficiente
+ 		i = 'a';
+@@ -828,7 +828,7 @@
+ 		}
+ 		if (!fin2) {
+ 			fin = true;
+-			devolver = Resultado.TABLAS_INSUF_MATERIAL;
++			devolver = Result.INSUF_MATERIAL_DRAW;
+ 		}
+ 		// Miramos si hay movimientos posibles
+ 		i = 'a';
+@@ -837,7 +837,7 @@
+ 			while (j &lt;= '8' &amp;&amp; !fin) {
+ 				pieza = posicion.getPieza(i, j);
+ 				if ((pieza != null)
+-						&amp;&amp; (!Piece.esBandoContrario(posicion.getTurno(), pieza))
++						&amp;&amp; (!Piece.esBandoContrario(posicion.getTurn(), pieza))
+ 						&amp;&amp; (!pieza.getCasillasValidas().isEmpty())) {
+ 					fin = true;
+ 				}
+@@ -848,20 +848,20 @@
+ 		}
+ 		if (!fin) {
+ 			// Negras dan jaque mate
+-			if (posicion.getTurno() == Bando.BLANCO)
+-				if (esCasillaAtacada(posicion.getKingPosition(Bando.BLANCO))) {
+-					devolver = Resultado.JAQUE_MATE_NEGRO;
++			if (posicion.getTurn() == Side.WHITE)
++				if (isAttackedSquare(posicion.getKingPosition(Side.WHITE))) {
++					devolver = Result.BLACK_CHECKMATE;
+ 				} else {
+-					devolver = Resultado.TABLAS_AHOGADO;
++					devolver = Result.STALEMATE;
+ 				}
+ 			else
+ 			// Blancas dan jaque mate
+-			if (esCasillaAtacada(posicion.getKingPosition(Bando.NEGRO))) {
+-				devolver = Resultado.JAQUE_MATE_BLANCO;
++			if (isAttackedSquare(posicion.getKingPosition(Side.BLACK))) {
++				devolver = Result.WHITE_CHECKMATE;
+ 			}
+ 			// Tablas por ahogado
+ 			else {
+-				devolver = Resultado.TABLAS_AHOGADO;
++				devolver = Result.STALEMATE;
+ 			}
+ 		}
+ 		return devolver;
+@@ -880,7 +880,7 @@
+ 	 *       con el rey, no hay que marcar la posible ambiguedad. Hay que
+ 	 *       tenerlo en cuenta.
+ 	 */
+-	public Movement moverALG(String mov) {
++	public Movement moveALG(String mov) {
+ 		char origenLetra = '\0', origenNum = '\0', destinoLetra = '\0', destinoNum = '\0';
+ 		char tipoPieza = 'P';
+ 		Tipo piezaCoronacion = null;
+@@ -974,7 +974,7 @@
+ 		if (contadorOesEnroque == 2) {
+ 			origenLetra = 'e';
+ 			destinoLetra = 'g';
+-			if (posicion.getTurno() == Bando.BLANCO) {
++			if (posicion.getTurn() == Side.WHITE) {
+ 				origenNum = '1';
+ 				destinoNum = '1';
+ 			} else { // turno == NEGRO
+@@ -984,7 +984,7 @@
+ 		} else if (contadorOesEnroque == 3) {
+ 			origenLetra = 'e';
+ 			destinoLetra = 'c';
+-			if (posicion.getTurno() == Bando.BLANCO) {
++			if (posicion.getTurn() == Side.WHITE) {
+ 				origenNum = '1';
+ 				destinoNum = '1';
+ 			} else { // turno == NEGRO
+@@ -1027,7 +1027,7 @@
+ 					+ &quot; &quot; + destinoLetra + &quot; &quot; + destinoNum);
+ 			return null;
+ 		} else {
+-			return mover(origenLetra, origenNum, destinoLetra, destinoNum);
++			return move(origenLetra, origenNum, destinoLetra, destinoNum);
+ 		}
+ 	}
+ }
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board2D.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board2D.java	2005-08-14 12:37:18 UTC (rev 34)
++++ trunk/MihailChessLib/com/mihail/chess/Board2D.java	2005-08-14 13:12:03 UTC (rev 35)
+@@ -16,7 +16,7 @@
+ import javax.swing.JOptionPane;
+ import javax.swing.JPanel;
+ 
+-import com.mihail.chess.Board.Bando;
++import com.mihail.chess.Board.Side;
+ import com.mihail.chess.Piece.Tipo;
+ 
+ /**
+@@ -182,8 +182,8 @@
+ 				// casillas blancas o negras
+ 				// if (activado) {
+ 				int v = (i + j) % 2;
+-				Image textura = theme.getImageCasilla(v == 0 ? Bando.BLANCO
+-						: Bando.NEGRO);
++				Image textura = theme.getImageCasilla(v == 0 ? Side.WHITE
++						: Side.BLACK);
+ 				if (textura != null)
+ 
+ 					g.drawImage(textura, i * TAM, j * TAM, TAM, TAM, null);
+@@ -383,7 +383,7 @@
+ 	 *            El tipo de las casillas, blancas o negras.
+ 	 * @return El color liso.
+ 	 */
+-	public Color getColorLiso(Bando b) {
++	public Color getColorLiso(Side b) {
+ 		return colorLiso[bandoToInt(b)];
+ 	}
+ 
+@@ -398,7 +398,7 @@
+ 	 *            El color liso.
+ 	 */
+ 
+-	public void setColorLiso(Bando b, Color colorLiso) {
++	public void setColorLiso(Side b, Color colorLiso) {
+ 		this.colorLiso[bandoToInt(b)] = colorLiso;
+ 	}
+ 
+@@ -414,17 +414,17 @@
+ 	}
+ 	
+ 	public void setPieza(Piece pieza, Square casilla) {
+-		tablero.setPieza(pieza, casilla);
++		tablero.setPiece(pieza, casilla);
+ 		repintarCasilla(casilla.getLetra() - 'a', casilla.getNumero()-'1');
+ 	}
+ 	
+ 	public void borrarPieza(Square casilla) {
+-		tablero.borrarPieza(casilla);
++		tablero.removePiece(casilla);
+ 		repintarCasilla(casilla.getLetra() - 'a', casilla.getNumero()-'1');
+ 	}
+ 	
+ 	public void setFEN(String pos) {
+-		tablero.setPosicion(pos);
++		tablero.setFEN(pos);
+ 		repaint();
+ 	}
+ 
+@@ -501,8 +501,8 @@
+ 		}
+ 	}
+ 
+-	private int bandoToInt(Bando b) {
+-		if (b == Bando.BLANCO) {
++	private int bandoToInt(Side b) {
++		if (b == Side.WHITE) {
+ 			return 0;
+ 		}
+ 		return 1;
+@@ -553,7 +553,7 @@
+ 		MediaTracker media = new MediaTracker(this);
+ 		for (int i = 0; i &lt; 2; i++) {
+ 			for (int j = 0; j &lt; 6; j++) {
+-				piezas[i][j] = theme.getImagePiece(i==0?Bando.BLANCO:Bando.NEGRO, intToTipo(j))
++				piezas[i][j] = theme.getImagePiece(i==0?Side.WHITE:Side.BLACK, intToTipo(j))
+ 						.getScaledInstance(TAM, TAM, Image.SCALE_FAST);
+ 				media.addImage(piezas[i][j], 1);
+ 			}
+
+Modified: trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-14 12:37:18 UTC (rev 34)
++++ trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-14 13:12:03 UTC (rev 35)
+@@ -13,7 +13,7 @@
+ 
+ import javax.swing.ImageIcon;
+ 
+-import com.mihail.chess.Board.Bando;
++import com.mihail.chess.Board.Side;
+ import com.mihail.chess.Piece.Tipo;
+ 
+ /**
+@@ -94,11 +94,11 @@
+ 		}
+ 	}
+ 	
+-	public Image getImagePiece(Bando bando, Tipo tipo) {
++	public Image getImagePiece(Side bando, Tipo tipo) {
+ 		return pieceImages[bandoToInt(bando)][tipoToInt(tipo)];
+ 	}
+ 	
+-	public Image getImageCasilla(Bando bando) {
++	public Image getImageCasilla(Side bando) {
+ 		return casillasImages[bandoToInt(bando)];
+ 	}
+ 	
+@@ -110,8 +110,8 @@
+ 		return background;
+ 	}
+ 	
+-	private int bandoToInt(Bando bando) {
+-		return bando == Bando.BLANCO? 0:1;
++	private int bandoToInt(Side bando) {
++		return bando == Side.WHITE? 0:1;
+ 	}
+ 	
+ 	private int tipoToInt(Tipo tipo) {
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Movement.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Movement.java	2005-08-14 12:37:18 UTC (rev 34)
++++ trunk/MihailChessLib/com/mihail/chess/Movement.java	2005-08-14 13:12:03 UTC (rev 35)
+@@ -1,8 +1,8 @@
+ package com.mihail.chess;
+ 
+-import static com.mihail.chess.Board.Bando;
++import static com.mihail.chess.Board.Side;
+ 
+-import com.mihail.chess.Board.Resultado;
++import com.mihail.chess.Board.Result;
+ import com.mihail.chess.Piece.Tipo;
+ 
+ /**
+@@ -46,7 +46,7 @@
+ 	/**
+ 	 * Bando que mueve.
+ 	 */
+-	private Bando bando;
++	private Side bando;
+ 
+ 	/**
+ 	 * Este atributo indica el tipo de pieza que es: {P,C,A,T,D,R}
+@@ -79,7 +79,7 @@
+ 	 * 'T' -&gt; Tablas &lt;BR&gt;
+ 	 * 0 -&gt; No ha terminado la partida
+ 	 */
+-	private Resultado finPartida;
++	private Result finPartida;
+ 
+ 	/**
+ 	 * Este atributo indica si se ha producido una coronacion y a que pieza se
+@@ -143,11 +143,11 @@
+ 		this.casillaOrigen = casillaOrigen;
+ 	}
+ 
+-	public Bando getBando() {
++	public Side getBando() {
+ 		return bando;
+ 	}
+ 
+-	public void setBando(Bando bando) {
++	public void setBando(Side bando) {
+ 		this.bando = bando;
+ 	}
+ 
+@@ -199,11 +199,11 @@
+ 		this.enroque = enroque;
+ 	}
+ 
+-	public Resultado getFinPartida() {
++	public Result getFinPartida() {
+ 		return finPartida;
+ 	}
+ 
+-	public void setFinPartida(Resultado finPartida) {
++	public void setFinPartida(Result finPartida) {
+ 		this.finPartida = finPartida;
+ 	}
+ 
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Piece.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Piece.java	2005-08-14 12:37:18 UTC (rev 34)
++++ trunk/MihailChessLib/com/mihail/chess/Piece.java	2005-08-14 13:12:03 UTC (rev 35)
+@@ -2,7 +2,7 @@
+ 
+ import java.util.*;
+ 
+-import static com.mihail.chess.Board.Bando;
++import static com.mihail.chess.Board.Side;
+ 
+ /**
+  * Esta clase define un objeto Pieza y sus caracteristicas: bando, tipo de pieza
+@@ -26,7 +26,7 @@
+ 	 * Este atributo indica el bando de la pieza (blanco o negro): true -&gt; bando
+ 	 * blanco false -&gt; bando negro
+ 	 */
+-	private Bando bando;
++	private Side bando;
+ 
+ 	/**
+ 	 * Este atributo indica el tipo de pieza que es: &lt;BR&gt;
+@@ -63,14 +63,14 @@
+ 	 *            Es el tipo de la pieza {P,C,A,T,D,R}
+ 	 * @see #tipo
+ 	 */
+-	public Piece(Bando ban, Tipo claseDePieza) {
++	public Piece(Side ban, Tipo claseDePieza) {
+ 		bando = ban;
+ 		tipo = claseDePieza;
+ 		casilla = new Square();
+ 		switch (tipo) {
+ 		case PEON:
+ 			direcciones = new DirectionVector[1];
+-			if (bando == Bando.BLANCO)
++			if (bando == Side.WHITE)
+ 				direcciones[0] = new DirectionVector(0, 1);
+ 			else
+ 				direcciones[0] = new DirectionVector(0, -1);
+@@ -157,7 +157,7 @@
+ 	 * @return Devuelve true cuando pieza sea del bando contrario al que le toca
+ 	 *         mover, false si es del mismo bando
+ 	 */
+-	public final static boolean esBandoContrario(Bando turno, Piece pieza) {
++	public final static boolean esBandoContrario(Side turno, Piece pieza) {
+ 		return turno != pieza.bando;
+ 	}
+ 
+@@ -177,7 +177,7 @@
+ 		this.casillasValidas.add(c);
+ 	}
+ 
+-	public Bando getBando() {
++	public Side getBando() {
+ 		return bando;
+ 	}
+ 
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Position.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Position.java	2005-08-14 12:37:18 UTC (rev 34)
++++ trunk/MihailChessLib/com/mihail/chess/Position.java	2005-08-14 13:12:03 UTC (rev 35)
+@@ -1,9 +1,9 @@
+ package com.mihail.chess;
+ 
+-import static com.mihail.chess.Board.Bando;
++import static com.mihail.chess.Board.Side;
+ import static com.mihail.chess.Piece.Tipo;
+ 
+-import com.mihail.chess.Board.Resultado;
++import com.mihail.chess.Board.Result;
+ import com.mihail.chess.Piece.Tipo;
+ 
+ public class Position {
+@@ -20,7 +20,7 @@
+ 	 * Constante que representa la cadena FEN con la posici&#243;n inicial en el
+ 	 * tablero.
+ 	 */
+-	public final static String CAD_INICIAL = &quot;rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1&quot;;
++	public final static String INITIAL_POSITION_FEN = &quot;rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1&quot;;
+ 
+ 	/**
+ 	 * Este atributo es la representacion del tablero en la logica del programa.
+@@ -34,7 +34,7 @@
+ 	 * Este atributo indica a quien le toca mover. Vale BLANCO cuando mueven
+ 	 * blancas y NEGRO cuando mueven negras.
+ 	 */
+-	private Bando turno;
++	private Side turno;
+ 
+ 	/**
+ 	 * Este atributo indica el numero de movimiento por el que va la partida.
+@@ -104,7 +104,7 @@
+ 				}
+ 			}
+ 		}
+-		turno = Bando.BLANCO;
++		turno = Side.WHITE;
+ 		kingPosition[0] = new Square();
+ 		kingPosition[1] = new Square();
+ 		enroque[0][0] = false;
+@@ -119,7 +119,7 @@
+ 
+ 	public Position(String posicion) {
+ 		this();
+-		setPosicion(posicion);
++		setFEN(posicion);
+ 	}
+ 
+ 	/**
+@@ -163,8 +163,8 @@
+ 	 *            Es el booleano en cuestion.
+ 	 * @return 0 si el turno es blanco y 1 si el turno es negro
+ 	 */
+-	private final static int bandoToInt(Bando c) {
+-		if (c == Bando.BLANCO) {
++	private final static int bandoToInt(Side c) {
++		if (c == Side.WHITE) {
+ 			return 0;
+ 		}
+ 		return 1;
+@@ -220,7 +220,7 @@
+ 				else {
+ 					if (cont &gt; 0)
+ 						cad += cont;
+-					if (p.getBando() == Bando.BLANCO)
++					if (p.getBando() == Side.WHITE)
+ 						cad += tipoToEnglish(p.getTipo());
+ 					else
+ 						cad += (Character
+@@ -235,7 +235,7 @@
+ 			cont = 0;
+ 		}
+ 
+-		if (turno == Bando.BLANCO)
++		if (turno == Side.WHITE)
+ 			cad += &quot; w&quot;;
+ 		else
+ 			cad += &quot; b&quot;;
+@@ -271,7 +271,7 @@
+ 	 *            estandar FEN.
+ 	 * @see getFEN()
+ 	 */
+-	public void setPosicion(String pos) {
++	public void setFEN(String pos) {
+ 		char let = 'a';
+ 		char num = '8';
+ 		for (int i = 0; i &lt; 8; i++) {
+@@ -287,51 +287,51 @@
+ 		for (int i = 0; i &lt; FEN[0].length(); i++) {
+ 			switch (FEN[0].charAt(i)) {
+ 			case 'P':
+-				setPieza(new Piece(Bando.BLANCO, Tipo.PEON), let, num);
++				setPiece(new Piece(Side.WHITE, Tipo.PEON), let, num);
+ 				let++;
+ 				break;
+ 			case 'p':
+-				setPieza(new Piece(Bando.NEGRO, Tipo.PEON), let, num);
++				setPiece(new Piece(Side.BLACK, Tipo.PEON), let, num);
+ 				let++;
+ 				break;
+ 			case 'N':
+-				setPieza(new Piece(Bando.BLANCO, Tipo.CABALLO), let, num);
++				setPiece(new Piece(Side.WHITE, Tipo.CABALLO), let, num);
+ 				let++;
+ 				break;
+ 			case 'n':
+-				setPieza(new Piece(Bando.NEGRO, Tipo.CABALLO), let, num);
++				setPiece(new Piece(Side.BLACK, Tipo.CABALLO), let, num);
+ 				let++;
+ 				break;
+ 			case 'B':
+-				setPieza(new Piece(Bando.BLANCO, Tipo.ALFIL), let, num);
++				setPiece(new Piece(Side.WHITE, Tipo.ALFIL), let, num);
+ 				let++;
+ 				break;
+ 			case 'b':
+-				setPieza(new Piece(Bando.NEGRO, Tipo.ALFIL), let, num);
++				setPiece(new Piece(Side.BLACK, Tipo.ALFIL), let, num);
+ 				let++;
+ 				break;
+ 			case 'R':
+-				setPieza(new Piece(Bando.BLANCO, Tipo.TORRE), let, num);
++				setPiece(new Piece(Side.WHITE, Tipo.TORRE), let, num);
+ 				let++;
+ 				break;
+ 			case 'r':
+-				setPieza(new Piece(Bando.NEGRO, Tipo.TORRE), let, num);
++				setPiece(new Piece(Side.BLACK, Tipo.TORRE), let, num);
+ 				let++;
+ 				break;
+ 			case 'Q':
+-				setPieza(new Piece(Bando.BLANCO, Tipo.DAMA), let, num);
++				setPiece(new Piece(Side.WHITE, Tipo.DAMA), let, num);
+ 				let++;
+ 				break;
+ 			case 'q':
+-				setPieza(new Piece(Bando.NEGRO, Tipo.DAMA), let, num);
++				setPiece(new Piece(Side.BLACK, Tipo.DAMA), let, num);
+ 				let++;
+ 				break;
+ 			case 'K':
+-				setPieza(new Piece(Bando.BLANCO, Tipo.REY), let, num);
++				setPiece(new Piece(Side.WHITE, Tipo.REY), let, num);
+ 				let++;
+ 				break;
+ 			case 'k':
+-				setPieza(new Piece(Bando.NEGRO, Tipo.REY), let, num);
++				setPiece(new Piece(Side.BLACK, Tipo.REY), let, num);
+ 				let++;
+ 				break;
+ 			case '/':
+@@ -352,9 +352,9 @@
+ 			}
+ 		}
+ 		if (FEN[1].charAt(0) == 'w') {
+-			setTurno(Bando.BLANCO);
++			setTurn(Side.WHITE);
+ 		} else {
+-			setTurno(Bando.NEGRO);
++			setTurn(Side.BLACK);
+ 		}
+ 		for (int i = 0; i &lt;= 1; i++) {
+ 			for (int j = 0; j &lt;= 1; j++) {
+@@ -365,41 +365,31 @@
+ 			for (int i = 0; i &lt; FEN[2].length(); i++) {
+ 				switch (FEN[2].charAt(i)) {
+ 				case 'K':
+-					setEnroqueCorto(Bando.BLANCO, true);
++					setKingsideCastling(Side.WHITE, true);
+ 					break;
+ 				case 'Q':
+-					setEnroqueLargo(Bando.BLANCO, true);
++					setQueensideCastling(Side.WHITE, true);
+ 					break;
+ 				case 'k':
+-					setEnroqueCorto(Bando.NEGRO, true);
++					setKingsideCastling(Side.BLACK, true);
+ 					break;
+ 				case 'q':
+-					setEnroqueLargo(Bando.NEGRO, true);
++					setQueensideCastling(Side.BLACK, true);
+ 					break;
+ 				}
+ 			}
+ 
+ 		}
+ 		if (FEN[3].charAt(0) == '-') {
+-			setAlPaso('\0');
++			setEnPassant('\0');
+ 		} else {
+-			setAlPaso(FEN[3].charAt(0));
++			setEnPassant(FEN[3].charAt(0));
+ 		}
+-		setContadorTablas((new Integer(FEN[4])).intValue());
+-		setNumeroMovimiento((new Integer(FEN[5])).intValue());
++		setHalfmoveClock((new Integer(FEN[4])).intValue());
++		setFullmoveNumber((new Integer(FEN[5])).intValue());
+ 	}
+ 
+ 	/**
+-	 * Permite saber el numero de movimiento actual.
+-	 * 
+-	 * @return Un entero, el numero en cuestion.
+-	 */
+-
+-	public int getNumMovimiento() {
+-		return numeroMovimiento;
+-	}
+-
+-	/**
+ 	 * Permite saber si el enroque corto esta disponible para un bando.
+ 	 * 
+ 	 * @param c
+@@ -407,11 +397,11 @@
+ 	 * @return True si el enroque corto puede realizarse, false en caso
+ 	 *         contrario.
+ 	 */
+-	public boolean getEnroqueCorto(Bando c) {
++	public boolean getKingsideCastling(Side c) {
+ 		switch (c) {
+-		case BLANCO:
++		case WHITE:
+ 			return enroque[0][0];
+-		case NEGRO:
++		case BLACK:
+ 			return enroque[1][0];
+ 		}
+ 		throw new AssertionError(&quot;El Bando solo puede ser BLANCO o NEGRO: &quot;
+@@ -426,11 +416,11 @@
+ 	 * @return True si el enroque largo puede realizarse, false en caso
+ 	 *         contrario.
+ 	 */
+-	public boolean getEnroqueLargo(Bando c) {
++	public boolean getQueensideCastling(Side c) {
+ 		switch (c) {
+-		case BLANCO:
++		case WHITE:
+ 			return enroque[0][1];
+-		case NEGRO:
++		case BLACK:
+ 			return enroque[1][1];
+ 		}
+ 		throw new AssertionError(&quot;El Bando solo puede ser BLANCO o NEGRO: &quot;
+@@ -461,7 +451,7 @@
+ 	 * 
+ 	 * @return Devuelve el valor del turno (0 -&gt; blancas, 1 -&gt; negras)
+ 	 */
+-	public Bando getTurno() {
++	public Side getTurn() {
+ 		return turno;
+ 	}
+ 
+@@ -469,11 +459,11 @@
+ 	 * Este metodo alterna el turno. Si le tocaba a blancas le toca a negras y
+ 	 * viceversa.
+ 	 */
+-	public void setTurno() {
+-		if (turno == Bando.BLANCO) {
+-			turno = Bando.NEGRO;
++	public void setTurn() {
++		if (turno == Side.WHITE) {
++			turno = Side.BLACK;
+ 		} else {
+-			turno = Bando.BLANCO;
++			turno = Side.WHITE;
+ 		}
+ 	}
+ 
+@@ -484,18 +474,18 @@
+ 	 *            BLANCO -&gt; blancas &lt;BR&gt;
+ 	 *            NEGRO -&gt; negras
+ 	 */
+-	public void setTurno(Bando t) {
++	public void setTurn(Side t) {
+ 		turno = t;
+ 	}
+ 
+-	public boolean setEnroqueCorto(Bando b, boolean c) {
++	public boolean setKingsideCastling(Side b, boolean c) {
+ 		if (!c) {
+ 			int x;
+ 			switch (b) {
+-			case BLANCO:
++			case WHITE:
+ 				x = 0;
+ 				break;
+-			case NEGRO:
++			case BLACK:
+ 				x = 1;
+ 				break;
+ 			default:
+@@ -505,23 +495,23 @@
+ 			enroque[x][0] = c;
+ 			return true;
+ 		}
+-		if (b == Bando.BLANCO) {
++		if (b == Side.WHITE) {
+ 			Piece p = getPieza('h', '1');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Bando.BLANCO)].getLetra() == 'e'
+-					&amp;&amp; kingPosition[bandoToInt(Bando.BLANCO)].getNumero() == '1'
+-					&amp;&amp; p.getBando() == Bando.BLANCO
++					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getLetra() == 'e'
++					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getNumero() == '1'
++					&amp;&amp; p.getBando() == Side.WHITE
+ 					&amp;&amp; p.getTipo() == Tipo.TORRE) {
+ 				enroque[0][0] = c;
+ 				return true;
+ 			} else
+ 				return false;
+-		} else if (b == Bando.NEGRO) {
++		} else if (b == Side.BLACK) {
+ 			Piece p = getPieza('h', '8');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Bando.NEGRO)].getLetra() == 'e'
+-					&amp;&amp; kingPosition[bandoToInt(Bando.NEGRO)].getNumero() == '8'
+-					&amp;&amp; p.getBando() == Bando.NEGRO &amp;&amp; p.getTipo() == Tipo.TORRE) {
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getLetra() == 'e'
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getNumero() == '8'
++					&amp;&amp; p.getBando() == Side.BLACK &amp;&amp; p.getTipo() == Tipo.TORRE) {
+ 				enroque[1][0] = c;
+ 				return true;
+ 			} else
+@@ -530,14 +520,14 @@
+ 		return false;
+ 	}
+ 
+-	public boolean setEnroqueLargo(Bando b, boolean c) {
++	public boolean setQueensideCastling(Side b, boolean c) {
+ 		if (!c) {
+ 			int x;
+ 			switch (b) {
+-			case BLANCO:
++			case WHITE:
+ 				x = 0;
+ 				break;
+-			case NEGRO:
++			case BLACK:
+ 				x = 1;
+ 				break;
+ 			default:
+@@ -547,23 +537,23 @@
+ 			enroque[x][1] = c;
+ 			return true;
+ 		}
+-		if (b == Bando.BLANCO) {
++		if (b == Side.WHITE) {
+ 			Piece p = getPieza('a', '1');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Bando.BLANCO)].getLetra() == 'e'
++					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getLetra() == 'e'
+ 					&amp;&amp; kingPosition[0].getNumero() == '1'
+-					&amp;&amp; p.getBando() == Bando.BLANCO
++					&amp;&amp; p.getBando() == Side.WHITE
+ 					&amp;&amp; p.getTipo() == Tipo.TORRE) {
+ 				enroque[0][1] = c;
+ 				return true;
+ 			} else
+ 				return false;
+-		} else if (b == Bando.NEGRO) {
++		} else if (b == Side.BLACK) {
+ 			Piece p = getPieza('a', '8');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Bando.NEGRO)].getLetra() == 'e'
+-					&amp;&amp; kingPosition[bandoToInt(Bando.NEGRO)].getNumero() == '8'
+-					&amp;&amp; p.getBando() == Bando.NEGRO &amp;&amp; p.getTipo() == Tipo.TORRE) {
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getLetra() == 'e'
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getNumero() == '8'
++					&amp;&amp; p.getBando() == Side.BLACK &amp;&amp; p.getTipo() == Tipo.TORRE) {
+ 				enroque[1][1] = c;
+ 				return true;
+ 			} else
+@@ -575,7 +565,7 @@
+ 	/**
+ 	 * @return Devuelve numeroMovimiento.
+ 	 */
+-	public int getNumeroMovimiento() {
++	public int getFullmoveNumber() {
+ 		return numeroMovimiento;
+ 	}
+ 
+@@ -591,7 +581,7 @@
+ 	 * @param num
+ 	 *            Es el numero de la casilla
+ 	 */
+-	public void setPieza(Piece pieza, char letra, char num) {
++	public void setPiece(Piece pieza, char letra, char num) {
+ 		pieza.setLetra(letra);
+ 		pieza.setNum(num);
+ 		tabla[num - '1'][letra - 'a'] = pieza;
+@@ -604,12 +594,12 @@
+ 		}
+ 	}
+ 	
+-	public void setPieza(Piece pieza, Square casilla) {
+-		setPieza(pieza, casilla.getLetra(), casilla.getNumero());
++	public void setPiece(Piece pieza, Square casilla) {
++		setPiece(pieza, casilla.getLetra(), casilla.getNumero());
+ 	}
+ 
+-	public void borrarPieza(Square casilla) {
+-		borrarPieza(casilla.getLetra(), casilla.getNumero());
++	public void removePiece(Square casilla) {
++		removePiece(casilla.getLetra(), casilla.getNumero());
+ 	}
+ 
+ 	/**
+@@ -622,41 +612,41 @@
+ 	 * @param num
+ 	 *            Es el numero de la casilla
+ 	 */
+-	public void borrarPieza(char letra, char num) {
++	public void removePiece(char letra, char num) {
+ 		int iNum = num - '1', iLetra = letra - 'a';
+ 		Piece p = tabla[iNum][iLetra];
+ 		// Se actualiza el estado de los enroques en caso de que se borre un rey
+ 		// o una torre
+ 		if (p != null) {
+ 			if (p.getTipo() == Tipo.REY) {
+-				if (p.getBando() == Bando.BLANCO) {
++				if (p.getBando() == Side.WHITE) {
+ 					enroque[0][0] = false;
+ 					enroque[0][1] = false;
+-					kingPosition[bandoToInt(Bando.BLANCO)].setLetra('\0');
+-					kingPosition[bandoToInt(Bando.BLANCO)].setNumero('\0');
++					kingPosition[bandoToInt(Side.WHITE)].setLetra('\0');
++					kingPosition[bandoToInt(Side.WHITE)].setNumero('\0');
+ 				} else {
+ 					enroque[1][0] = false;
+ 					enroque[1][1] = false;
+-					kingPosition[bandoToInt(Bando.NEGRO)].setLetra('\0');
+-					kingPosition[bandoToInt(Bando.NEGRO)].setNumero('\0');
++					kingPosition[bandoToInt(Side.BLACK)].setLetra('\0');
++					kingPosition[bandoToInt(Side.BLACK)].setNumero('\0');
+ 				}
+ 			} else if (p.getTipo() == Tipo.TORRE) {
+ 				if (p.getLetra() == 'a' &amp;&amp; p.getNum() == '1'
+-						&amp;&amp; p.getBando() == Bando.BLANCO)
++						&amp;&amp; p.getBando() == Side.WHITE)
+ 					enroque[0][1] = false;
+ 				else if (p.getLetra() == 'h' &amp;&amp; p.getNum() == '1'
+-						&amp;&amp; p.getBando() == Bando.BLANCO)
++						&amp;&amp; p.getBando() == Side.WHITE)
+ 					enroque[0][0] = false;
+ 				else if (p.getLetra() == 'a' &amp;&amp; p.getNum() == '8'
+-						&amp;&amp; p.getBando() == Bando.NEGRO)
++						&amp;&amp; p.getBando() == Side.BLACK)
+ 					enroque[1][1] = false;
+ 				else if (p.getLetra() == 'h' &amp;&amp; p.getNum() == '8'
+-						&amp;&amp; p.getBando() == Bando.NEGRO)
++						&amp;&amp; p.getBando() == Side.BLACK)
+ 					enroque[1][0] = false;
+ 			} else if (p.getTipo() == Tipo.PEON) {
+ 				if (letra == alPaso
+-						&amp;&amp; (p.getBando() == Bando.BLANCO &amp;&amp; num == '4')
+-						|| (p.getBando() == Bando.NEGRO &amp;&amp; num == '5'))
++						&amp;&amp; (p.getBando() == Side.WHITE &amp;&amp; num == '4')
++						|| (p.getBando() == Side.BLACK &amp;&amp; num == '5'))
+ 					alPaso = 0;
+ 			}
+ 			clavePosicion = clavePosicion
+@@ -665,8 +655,8 @@
+ 		}
+ 	}
+ 	
+-	public boolean esVacia(Square c) {
+-		return esVacia(c.getLetra(), c.getNumero());
++	public boolean isEmpty(Square c) {
++		return isEmpty(c.getLetra(), c.getNumero());
+ 	}
+ 
+ 	/**
+@@ -675,7 +665,7 @@
+ 	 * @return Devuelve true si la casilla esta vacia (contiene null), false en
+ 	 *         caso contrario.
+ 	 */
+-	public boolean esVacia(char let, char num) {
++	public boolean isEmpty(char let, char num) {
+ 		return (getPieza(let, num) == null);
+ 	}
+ 
+@@ -684,14 +674,14 @@
+ 	 * 
+ 	 * @return Un entero, la clave en cuestion.
+ 	 */
+-	public int getClavePosicion() {
++	public int getPositionKey() {
+ 		return clavePosicion;
+ 	}
+ 
+ 	/**
+ 	 * @return Returns the alPaso.
+ 	 */
+-	public char getAlPaso() {
++	public char getEnPassant() {
+ 		return alPaso;
+ 	}
+ 
+@@ -705,20 +695,20 @@
+ 	 *            La columna en la qeu se puede comer al paso. Se indica con la
+ 	 *            letra de la columna.
+ 	 */
+-	public void setAlPaso(char alPaso) {
++	public void setEnPassant(char alPaso) {
+ 		if (alPaso == '\0') {
+ 			this.alPaso = alPaso;
+ 			return;
+ 		}
+ 		boolean encontrado = false;
+ 		Piece p;
+-		if (this.turno == Bando.NEGRO) {
++		if (this.turno == Side.BLACK) {
+ 			p = getPieza(alPaso, '4');
+-			encontrado = p != null &amp;&amp; p.getBando() == Bando.BLANCO
++			encontrado = p != null &amp;&amp; p.getBando() == Side.WHITE
+ 					&amp;&amp; p.getTipo() == Tipo.PEON;
+ 		} else {
+ 			p = getPieza(alPaso, '5');
+-			encontrado = p != null &amp;&amp; p.getBando() == Bando.NEGRO
++			encontrado = p != null &amp;&amp; p.getBando() == Side.BLACK
+ 					&amp;&amp; p.getTipo() == Tipo.PEON;
+ 		}
+ 		if (encontrado)
+@@ -728,7 +718,7 @@
+ 	/**
+ 	 * @return Returns the contadorTablas.
+ 	 */
+-	public int getContadorTablas() {
++	public int getHalfmoveClock() {
+ 		return contadorTablas;
+ 	}
+ 
+@@ -736,11 +726,11 @@
+ 	 * @param contadorTablas
+ 	 *            The contadorTablas to set.
+ 	 */
+-	public void setContadorTablas(int contadorTablas) {
++	public void setHalfmoveClock(int contadorTablas) {
+ 		this.contadorTablas = contadorTablas;
+ 	}
+ 
+-	public void addContadorTablas() {
++	public void addHalfmoveClock() {
+ 		this.contadorTablas++;
+ 	}
+ 
+@@ -748,18 +738,18 @@
+ 	 * @param numeroMovimiento
+ 	 *            The numeroMovimiento to set.
+ 	 */
+-	public void setNumeroMovimiento(int numeroMovimiento) {
++	public void setFullmoveNumber(int numeroMovimiento) {
+ 		this.numeroMovimiento = numeroMovimiento;
+ 	}
+ 
+-	public void addNumeroMovimiento() {
++	public void addFullmoveNumber() {
+ 		this.numeroMovimiento++;
+ 	}
+ 
+ 	/**
+ 	 * @return Returns the kingPosition.
+ 	 */
+-	public Square getKingPosition(Bando color) {
++	public Square getKingPosition(Side color) {
+ 		return kingPosition[bandoToInt(color)];
+ 	}
+ 	
+@@ -846,8 +836,8 @@
+ 			temp.append (&quot;=&quot; + tipoToEnglish (mov.getCoronacion()));
+ 
+ 		if (mov.isJaque())
+-			if (mov.getFinPartida() == Resultado.JAQUE_MATE_BLANCO
+-					|| mov.getFinPartida() == Resultado.JAQUE_MATE_NEGRO)
++			if (mov.getFinPartida() == Result.WHITE_CHECKMATE
++					|| mov.getFinPartida() == Result.BLACK_CHECKMATE)
+ 				temp.append (&quot;#&quot;);
+ 			else
+ 				temp.append (&quot;+&quot;);
+
+Modified: trunk/MihailChessLib/com/mihail/chess/VariationsTree.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/VariationsTree.java	2005-08-14 12:37:18 UTC (rev 34)
++++ trunk/MihailChessLib/com/mihail/chess/VariationsTree.java	2005-08-14 13:12:03 UTC (rev 35)
+@@ -4,7 +4,7 @@
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+-import com.mihail.chess.Board.Bando;
++import com.mihail.chess.Board.Side;
+ 
+ /**
+  * @author Wotan
+@@ -64,7 +64,7 @@
+ 	 *            Numero del movimiento
+ 	 * @return Devuelve el movimiento correspondiente a color y numero
+ 	 */
+-	public Movement getMovimiento(Bando color, int numero) {
++	public Movement getMovimiento(Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 		if (n != null)
+ 			return n.movimiento;
+@@ -85,7 +85,7 @@
+ 	 * @return Un booleano que indica si para ese movimiento existen
+ 	 *         alternativas.
+ 	 */
+-	public boolean existeVariante(Bando color, int numero) {
++	public boolean existeVariante(Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 
+ 		if (n != null &amp;&amp; n.variantes != null)
+@@ -102,7 +102,7 @@
+ 	 *            Numero del movimiento.
+ 	 * @return El numero de alternativas a un movimiento.
+ 	 */
+-	public int getNumVariantes(Bando color, int numero) {
++	public int getNumVariantes(Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 
+ 		if (n != null) {
+@@ -112,14 +112,14 @@
+ 		return 0;
+ 	}
+ 
+-	private int bandoToInt(Bando b) {
+-		if (b == Bando.BLANCO)
++	private int bandoToInt(Side b) {
++		if (b == Side.WHITE)
+ 			return 0;
+ 		return 1;
+ 	}
+ 
+ 	// Funcion de utilidad.
+-	private NodoArbol getNodo(Bando color, int numero) {
++	private NodoArbol getNodo(Side color, int numero) {
+ 		int indice = (numero - 1) * 2 + bandoToInt(color);
+ 		if (indice &lt; arbol.size())
+ 			return arbol.get(indice);
+@@ -136,14 +136,14 @@
+ 	 * @param numero
+ 	 *            Numero del movimiento.
+ 	 */
+-	public void addVariante(Movement mov, Bando color, int numero) {
++	public void addVariante(Movement mov, Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 
+ 		if (n.variantes == null)
+ 			n.variantes = new ArrayList&lt;VariationsTree&gt;();
+ 
+ 		VariationsTree a = new VariationsTree(numero);
+-		if (color == Bando.NEGRO) // Cada arbol de variantes debe empezar con un movimiento de blancas
++		if (color == Side.BLACK) // Cada arbol de variantes debe empezar con un movimiento de blancas
+ 			a.appendMovimiento(new Movement());
+ 		a.appendMovimiento(mov);
+ 
+@@ -159,7 +159,7 @@
+ 	 *            Numero de variante que se quiere obtener.
+ 	 * @return Devuelve un ArbolVariantes, que es la variante del movimiento.
+ 	 */
+-	public VariationsTree getVariante(Bando color, int numero, int num) {
++	public VariationsTree getVariante(Side color, int numero, int num) {
+ 		NodoArbol n = getNodo(color, numero);
+ 		if (n != null)
+ 			return n.variantes.get(num);
+@@ -204,7 +204,7 @@
+ 	 * @param num
+ 	 */
+ 	
+-	public void promoteVariant(Bando color, int numero, int num) {
++	public void promoteVariant(Side color, int numero, int num) {
+ 		VariationsTree a = getVariante(color, numero, num);
+ 		int indice = (numero - 1) * 2 + bandoToInt(color);
+ 		NodoArbol n = getNodo(color, numero);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000005.html">[Mihailchess-svn] r34 - trunk/MihailChessLib/com/mihail/pgn
+</A></li>
+	<LI>Next message: <A HREF="000011.html">[Mihailchess-svn] r36 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10">[ date ]</a>
+              <a href="thread.html#10">[ thread ]</a>
+              <a href="subject.html#10">[ subject ]</a>
+              <a href="author.html#10">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,1764 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r36 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r36%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508141330.j7EDU0Bt003239%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000010.html">
+   <LINK REL="Next"  HREF="000006.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r36 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r36%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508141330.j7EDU0Bt003239%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r36 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Sun Aug 14 15:30:00 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000010.html">[Mihailchess-svn] r35 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+        <LI>Next message: <A HREF="000006.html">[Mihailchess-svn] r37 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11">[ date ]</a>
+              <a href="thread.html#11">[ thread ]</a>
+              <a href="subject.html#11">[ subject ]</a>
+              <a href="author.html#11">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-14 15:30:00 +0200 (Sun, 14 Aug 2005)
+New Revision: 36
+
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/Board.java
+   trunk/MihailChessLib/com/mihail/chess/Board2D.java
+   trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+   trunk/MihailChessLib/com/mihail/chess/DirectionVector.java
+   trunk/MihailChessLib/com/mihail/chess/Movement.java
+   trunk/MihailChessLib/com/mihail/chess/Piece.java
+   trunk/MihailChessLib/com/mihail/chess/Position.java
+   trunk/MihailChessLib/com/mihail/chess/Square.java
+   trunk/MihailChessLib/com/mihail/chess/VariationsTree.java
+Log:
+More translations
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -2,7 +2,7 @@
+ 
+ import java.util.ArrayList;
+ 
+-import com.mihail.chess.Piece.Tipo;
++import com.mihail.chess.Piece.Type;
+ 
+ public class Board {
+ 
+@@ -40,7 +40,7 @@
+ 	/**
+ 	 * Este atributo se utiliza para las coronaciones.
+ 	 */
+-	private Tipo coronar = Tipo.DAMA;
++	private Type coronar = Type.QUEEN;
+ 
+ 	/**
+ 	 * Tabla hash usada para comprobar posiciones repetidas.
+@@ -80,7 +80,7 @@
+ 	 *            Caracter que indica el tipo de pieza a coronar (C, A, T, D).
+ 	 */
+ 
+-	public void setPromotionPiece(Tipo c) {
++	public void setPromotionPiece(Type c) {
+ 		coronar = c;
+ 	}
+ 
+@@ -91,7 +91,7 @@
+ 	 */
+ 
+ 	public int getTotalFullmoveNumber() {
+-		return movimientos.getNumMovimientos();
++		return movimientos.getFullmoveNumber();
+ 	}
+ 
+ 	public Position getPosition() {
+@@ -108,7 +108,7 @@
+ 	 *         '\0' -&gt; Partida Inacabada o Resultado Desconocido
+ 	 */
+ 	public Result getResult() {
+-		return movimientos.getLastMovimiento().getFinPartida();
++		return movimientos.getLastMove().getFinPartida();
+ 	}
+ 
+ 	/**
+@@ -119,7 +119,7 @@
+ 			for (char j = '1'; j &lt;= '8'; j++) {
+ 				Piece p = posicion.getPieza(i, j);
+ 				if (p != null) {
+-					if (!Piece.esBandoContrario(posicion.getTurn(), p)) {
++					if (!Piece.isOppositeSide(posicion.getTurn(), p)) {
+ 						calcularMovimientos(p);
+ 					}
+ 				}
+@@ -136,60 +136,60 @@
+ 	 */
+ 	private void calcularMovimientos(Piece pieza) {
+ 		pieza.getCasillasValidas().clear();
+-		switch (pieza.getTipo()) {
+-		case PEON:
++		switch (pieza.getType()) {
++		case PAWN:
+ 			// Peon
+ 			// Peon blanco
+-			if (pieza.getBando() == Side.WHITE) {
++			if (pieza.getSide() == Side.WHITE) {
+ 				// Movimiento hacia delante
+ 				// Hacemos dos iteraciones, una para el caso de que avance
+ 				// una casilla, otra para el caso de que avance dos
+-				if (posicion.isEmpty(pieza.getLetra(),
+-						(char) (pieza.getNum() + 1))) {
+-					if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+-							.getLetra(), (char) (pieza.getNum() + 1))) {
+-						pieza.anadirMov(pieza.getLetra(), (char) (pieza
+-								.getNum() + 1));
+-						if (pieza.getNum() == '2'
+-								&amp;&amp; posicion.isEmpty(pieza.getLetra(),
+-										(char) (pieza.getNum() + 2))) {
+-							if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+-									.getLetra(), (char) (pieza.getNum() + 2))) {
+-								pieza.anadirMov(pieza.getLetra(), (char) (pieza
+-										.getNum() + 2));
++				if (posicion.isEmpty(pieza.getFile(),
++						(char) (pieza.getRank() + 1))) {
++					if (esLegal(pieza.getFile(), pieza.getRank(), pieza
++							.getFile(), (char) (pieza.getRank() + 1))) {
++						pieza.addMove(pieza.getFile(), (char) (pieza
++								.getRank() + 1));
++						if (pieza.getRank() == '2'
++								&amp;&amp; posicion.isEmpty(pieza.getFile(),
++										(char) (pieza.getRank() + 2))) {
++							if (esLegal(pieza.getFile(), pieza.getRank(), pieza
++									.getFile(), (char) (pieza.getRank() + 2))) {
++								pieza.addMove(pieza.getFile(), (char) (pieza
++										.getRank() + 2));
+ 							}
+ 						}
+ 					}
+ 				}
+ 				if (posicion.getEnPassant() != '\0'
+-						&amp;&amp; pieza.getNum() == '5'
+-						&amp;&amp; Math.abs(pieza.getLetra() - posicion.getEnPassant()) == 1) {
+-					pieza.anadirMov(posicion.getEnPassant(), (char) (pieza
+-							.getNum() + 1));
++						&amp;&amp; pieza.getRank() == '5'
++						&amp;&amp; Math.abs(pieza.getFile() - posicion.getEnPassant()) == 1) {
++					pieza.addMove(posicion.getEnPassant(), (char) (pieza
++							.getRank() + 1));
+ 				}
+ 				// Movimientos para comer
+ 				try {
+-					Piece p = posicion.getPieza((char) (pieza.getLetra() + 1),
+-							(char) (pieza.getNum() + 1));
+-					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+-						if (esLegal(pieza.getLetra(), pieza.getNum(),
+-								(char) (pieza.getLetra() + 1), (char) (pieza
+-										.getNum() + 1))) {
+-							pieza.anadirMov((char) (pieza.getLetra() + 1),
+-									(char) (pieza.getNum() + 1));
++					Piece p = posicion.getPieza((char) (pieza.getFile() + 1),
++							(char) (pieza.getRank() + 1));
++					if (p != null &amp;&amp; p.getSide() == Side.BLACK) {
++						if (esLegal(pieza.getFile(), pieza.getRank(),
++								(char) (pieza.getFile() + 1), (char) (pieza
++										.getRank() + 1))) {
++							pieza.addMove((char) (pieza.getFile() + 1),
++									(char) (pieza.getRank() + 1));
+ 						}
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+ 				}
+ 				try {
+-					Piece p = posicion.getPieza((char) (pieza.getLetra() + 1),
+-							(char) (pieza.getNum() - 1));
+-					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+-						if (esLegal(pieza.getLetra(), pieza.getNum(),
+-								(char) (pieza.getLetra() - 1), (char) (pieza
+-										.getNum() + 1))) {
+-							pieza.anadirMov((char) (pieza.getLetra() - 1),
+-									(char) (pieza.getNum() + 1));
++					Piece p = posicion.getPieza((char) (pieza.getFile() + 1),
++							(char) (pieza.getRank() - 1));
++					if (p != null &amp;&amp; p.getSide() == Side.BLACK) {
++						if (esLegal(pieza.getFile(), pieza.getRank(),
++								(char) (pieza.getFile() - 1), (char) (pieza
++										.getRank() + 1))) {
++							pieza.addMove((char) (pieza.getFile() - 1),
++									(char) (pieza.getRank() + 1));
+ 						}
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+@@ -197,92 +197,91 @@
+ 			}
+ 			// Peon negro
+ 			else {
+-				if (posicion.isEmpty(pieza.getLetra(),
+-						(char) (pieza.getNum() - 1))) {
+-					if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+-							.getLetra(), (char) (pieza.getNum() - 1))) {
+-						pieza.anadirMov(pieza.getLetra(), (char) (pieza
+-								.getNum() - 1));
+-						if (pieza.getNum() == '7'
+-								&amp;&amp; posicion.isEmpty(pieza.getLetra(),
+-										(char) (pieza.getNum() - 2))) {
+-							if (esLegal(pieza.getLetra(), pieza.getNum(), pieza
+-									.getLetra(), (char) (pieza.getNum() - 2))) {
+-								pieza.anadirMov(pieza.getLetra(), (char) (pieza
+-										.getNum() - 2));
++				if (posicion.isEmpty(pieza.getFile(),
++						(char) (pieza.getRank() - 1))) {
++					if (esLegal(pieza.getFile(), pieza.getRank(), pieza
++							.getFile(), (char) (pieza.getRank() - 1))) {
++						pieza.addMove(pieza.getFile(), (char) (pieza
++								.getRank() - 1));
++						if (pieza.getRank() == '7'
++								&amp;&amp; posicion.isEmpty(pieza.getFile(),
++										(char) (pieza.getRank() - 2))) {
++							if (esLegal(pieza.getFile(), pieza.getRank(), pieza
++									.getFile(), (char) (pieza.getRank() - 2))) {
++								pieza.addMove(pieza.getFile(), (char) (pieza
++										.getRank() - 2));
+ 							}
+ 						}
+ 					}
+ 				}
+ 				if (posicion.getEnPassant() != '\0'
+-						&amp;&amp; pieza.getNum() == '4'
+-						&amp;&amp; Math.abs(pieza.getLetra() - posicion.getEnPassant()) == 1) {
+-					pieza.anadirMov(posicion.getEnPassant(), (char) (pieza
+-							.getNum() - 1));
++						&amp;&amp; pieza.getRank() == '4'
++						&amp;&amp; Math.abs(pieza.getFile() - posicion.getEnPassant()) == 1) {
++					pieza.addMove(posicion.getEnPassant(), (char) (pieza
++							.getRank() - 1));
+ 				}
+ 				try {
+-					Piece p = posicion.getPieza((char) (pieza.getLetra() - 1),
+-							(char) (pieza.getNum() + 1));
+-					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+-						if (esLegal(pieza.getLetra(), pieza.getNum(),
+-								(char) (pieza.getLetra() + 1), (char) (pieza
+-										.getNum() - 1))) {
+-							pieza.anadirMov((char) (pieza.getLetra() + 1),
+-									(char) (pieza.getNum() - 1));
++					Piece p = posicion.getPieza((char) (pieza.getFile() - 1),
++							(char) (pieza.getRank() + 1));
++					if (p != null &amp;&amp; p.getSide() == Side.BLACK) {
++						if (esLegal(pieza.getFile(), pieza.getRank(),
++								(char) (pieza.getFile() + 1), (char) (pieza
++										.getRank() - 1))) {
++							pieza.addMove((char) (pieza.getFile() + 1),
++									(char) (pieza.getRank() - 1));
+ 						}
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+ 				}
+ 				try {
+-					Piece p = posicion.getPieza((char) (pieza.getLetra() - 1),
+-							(char) (pieza.getNum() - 1));
+-					if (p != null &amp;&amp; p.getBando() == Side.BLACK) {
+-						if (esLegal(pieza.getLetra(), pieza.getNum(),
+-								(char) (pieza.getLetra() - 1), (char) (pieza
+-										.getNum() - 1))) {
+-							pieza.anadirMov((char) (pieza.getLetra() - 1),
+-									(char) (pieza.getNum() - 1));
++					Piece p = posicion.getPieza((char) (pieza.getFile() - 1),
++							(char) (pieza.getRank() - 1));
++					if (p != null &amp;&amp; p.getSide() == Side.BLACK) {
++						if (esLegal(pieza.getFile(), pieza.getRank(),
++								(char) (pieza.getFile() - 1), (char) (pieza
++										.getRank() - 1))) {
++							pieza.addMove((char) (pieza.getFile() - 1),
++									(char) (pieza.getRank() - 1));
+ 						}
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+ 				}
+ 			}
+ 			break;
+-		case CABALLO:
+-			for (DirectionVector v : pieza.getDirecciones()) {
+-				Square destino = pieza.getCasilla().add(v);
++		case KNIGHT:
++			for (DirectionVector v : pieza.getDirections()) {
++				Square destino = pieza.getSquare().add(v);
+ 				try {
+-					if (esLegal(pieza.getLetra(), pieza.getNum(), destino
+-							.getLetra(), destino.getNumero())) {
+-						Piece p = posicion.getPieza(destino.getLetra(), destino
+-								.getNumero());
++					if (esLegal(pieza.getFile(), pieza.getRank(), destino
++							.getFile(), destino.getRank())) {
++						Piece p = posicion.getPieza(destino.getFile(), destino
++								.getRank());
+ 						if (p == null
+-								|| (p != null &amp;&amp; Piece.esBandoContrario(pieza,
+-										p)))
+-							pieza.anadirMov(destino);
++								|| (p != null &amp;&amp; p.isOppositeSide(pieza)))
++							pieza.addMove(destino);
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+ 				}
+ 			}
+ 
+ 			break;
+-		case DAMA:
+-		case ALFIL:
+-		case TORRE:
+-			for (DirectionVector v : pieza.getDirecciones()) {
++		case QUEEN:
++		case BISHOP:
++		case ROOK:
++			for (DirectionVector v : pieza.getDirections()) {
+ 				try {
+-					Square destino = pieza.getCasilla().add(v);
+-					Piece p = posicion.getPieza(destino.getLetra(), destino
+-							.getNumero());
++					Square destino = pieza.getSquare().add(v);
++					Piece p = posicion.getPieza(destino.getFile(), destino
++							.getRank());
+ 					while (p == null) {
+-						p = posicion.getPieza(destino.getLetra(), destino
+-								.getNumero());
+-						if (esLegal(pieza.getLetra(), pieza.getNum(), destino
+-								.getLetra(), destino.getNumero())) {
++						p = posicion.getPieza(destino.getFile(), destino
++								.getRank());
++						if (esLegal(pieza.getFile(), pieza.getRank(), destino
++								.getFile(), destino.getRank())) {
+ 							if (p == null
+-									|| (p != null &amp;&amp; Piece.esBandoContrario(
+-											pieza, p))) {
+-								pieza.anadirMov(destino);
++									|| (p != null &amp;&amp; p.isOppositeSide(
++											pieza))) {
++								pieza.addMove(destino);
+ 							}
+ 						}
+ 						destino = destino.add(v);
+@@ -292,18 +291,17 @@
+ 			}
+ 
+ 			break;
+-		case REY:
+-			for (DirectionVector v : pieza.getDirecciones()) {
+-				Square destino = pieza.getCasilla().add(v);
++		case KING:
++			for (DirectionVector v : pieza.getDirections()) {
++				Square destino = pieza.getSquare().add(v);
+ 				try {
+-					if (esLegal(pieza.getLetra(), pieza.getNum(), destino
+-							.getLetra(), destino.getNumero())) {
+-						Piece p = posicion.getPieza(destino.getLetra(), destino
+-								.getNumero());
++					if (esLegal(pieza.getFile(), pieza.getRank(), destino
++							.getFile(), destino.getRank())) {
++						Piece p = posicion.getPieza(destino.getFile(), destino
++								.getRank());
+ 						if (p == null
+-								|| (p != null &amp;&amp; Piece.esBandoContrario(pieza,
+-										p)))
+-							pieza.anadirMov(destino);
++								|| (p != null &amp;&amp; p.isOppositeSide(pieza)))
++							pieza.addMove(destino);
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+ 				}
+@@ -312,28 +310,28 @@
+ 			if (posicion.getKingsideCastling(posicion.getTurn())
+ 					&amp;&amp; !isAttackedSquare(posicion.getKingPosition(posicion
+ 							.getTurn()))
+-					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() + 1), pieza
+-							.getNum())
+-					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() + 1), (pieza
+-							.getNum()))
+-					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() + 2), pieza
+-							.getNum())
+-					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() + 2), (pieza
+-							.getNum()))) {
+-				pieza.anadirMov((char) (pieza.getLetra() + 2), pieza.getNum());
++					&amp;&amp; posicion.isEmpty((char) (pieza.getFile() + 1), pieza
++							.getRank())
++					&amp;&amp; !isAttackedSquare((char) (pieza.getFile() + 1), (pieza
++							.getRank()))
++					&amp;&amp; posicion.isEmpty((char) (pieza.getFile() + 2), pieza
++							.getRank())
++					&amp;&amp; !isAttackedSquare((char) (pieza.getFile() + 2), (pieza
++							.getRank()))) {
++				pieza.addMove((char) (pieza.getFile() + 2), pieza.getRank());
+ 			}
+ 			if (posicion.getQueensideCastling(posicion.getTurn())
+ 					&amp;&amp; !isAttackedSquare(posicion.getKingPosition(posicion
+ 							.getTurn()))
+-					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() - 1), pieza
+-							.getNum())
+-					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() - 1), (pieza
+-							.getNum()))
+-					&amp;&amp; posicion.isEmpty((char) (pieza.getLetra() - 2), pieza
+-							.getNum())
+-					&amp;&amp; !isAttackedSquare((char) (pieza.getLetra() - 2), (pieza
+-							.getNum()))) {
+-				pieza.anadirMov((char) (pieza.getLetra() - 2), pieza.getNum());
++					&amp;&amp; posicion.isEmpty((char) (pieza.getFile() - 1), pieza
++							.getRank())
++					&amp;&amp; !isAttackedSquare((char) (pieza.getFile() - 1), (pieza
++							.getRank()))
++					&amp;&amp; posicion.isEmpty((char) (pieza.getFile() - 2), pieza
++							.getRank())
++					&amp;&amp; !isAttackedSquare((char) (pieza.getFile() - 2), (pieza
++							.getRank()))) {
++				pieza.addMove((char) (pieza.getFile() - 2), pieza.getRank());
+ 			}
+ 			break;
+ 		}
+@@ -348,7 +346,7 @@
+ 	 * @return Devuelve un booleano indicando si es una casilla atacada o no
+ 	 */
+ 	public boolean isAttackedSquare(Square c) {
+-		return isAttackedSquare(c.getLetra(), c.getNumero());
++		return isAttackedSquare(c.getFile(), c.getRank());
+ 	}
+ 
+ 	/**
+@@ -389,8 +387,8 @@
+ 				Piece p = posicion.getPieza((char) (letra + v.getX()),
+ 						(char) (num + v.getY()));
+ 				if (p != null) {
+-					if (Piece.esBandoContrario(posicion.getTurn(), p)
+-							&amp;&amp; p.getTipo() == Tipo.CABALLO) {
++					if (Piece.isOppositeSide(posicion.getTurn(), p)
++							&amp;&amp; p.getType() == Type.KNIGHT) {
+ 						return true;
+ 					}
+ 				}
+@@ -413,10 +411,10 @@
+ 					numDest = (char) (numDest + v.getY());
+ 					p = posicion.getPieza(letDest, numDest);
+ 				}
+-				if (Piece.esBandoContrario(posicion.getTurn(), p)
+-						&amp;&amp; (p.getTipo() == Tipo.DAMA
+-								|| p.getTipo() == Tipo.TORRE || (num + v.getY() == numDest
+-								&amp;&amp; letra + v.getX() == letDest &amp;&amp; p.getTipo() == Tipo.REY))) {
++				if (Piece.isOppositeSide(posicion.getTurn(), p)
++						&amp;&amp; (p.getType() == Type.QUEEN
++								|| p.getType() == Type.ROOK || (num + v.getY() == numDest
++								&amp;&amp; letra + v.getX() == letDest &amp;&amp; p.getType() == Type.KING))) {
+ 					return true;
+ 				}
+ 			} catch (ArrayIndexOutOfBoundsException e) {
+@@ -436,11 +434,11 @@
+ 					numDest = (char) (numDest + v.getY());
+ 					p = posicion.getPieza(letDest, numDest);
+ 				}
+-				if (Piece.esBandoContrario(posicion.getTurn(), p)
+-						&amp;&amp; (p.getTipo() == Tipo.DAMA
+-								|| p.getTipo() == Tipo.ALFIL || (num + v.getY() == numDest
+-								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getTipo() == Tipo.REY || (p
+-								.getTipo() == Tipo.PEON &amp;&amp; p.getBando() == Side.BLACK))))) {
++				if (Piece.isOppositeSide(posicion.getTurn(), p)
++						&amp;&amp; (p.getType() == Type.QUEEN
++								|| p.getType() == Type.BISHOP || (num + v.getY() == numDest
++								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getType() == Type.KING || (p
++								.getType() == Type.PAWN &amp;&amp; p.getSide() == Side.BLACK))))) {
+ 					return true;
+ 				}
+ 			} catch (ArrayIndexOutOfBoundsException e) {
+@@ -460,11 +458,11 @@
+ 					numDest = (char) (numDest + v.getY());
+ 					p = posicion.getPieza(letDest, numDest);
+ 				}
+-				if (Piece.esBandoContrario(posicion.getTurn(), p)
+-						&amp;&amp; (p.getTipo() == Tipo.DAMA
+-								|| p.getTipo() == Tipo.ALFIL || (num + v.getY() == numDest
+-								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getTipo() == Tipo.REY || (p
+-								.getTipo() == Tipo.PEON &amp;&amp; p.getBando() == Side.WHITE))))) {
++				if (Piece.isOppositeSide(posicion.getTurn(), p)
++						&amp;&amp; (p.getType() == Type.QUEEN
++								|| p.getType() == Type.BISHOP || (num + v.getY() == numDest
++								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getType() == Type.KING || (p
++								.getType() == Type.PAWN &amp;&amp; p.getSide() == Side.WHITE))))) {
+ 					return true;
+ 				}
+ 			} catch (ArrayIndexOutOfBoundsException e) {
+@@ -530,10 +528,10 @@
+ 			return null;
+ 		}
+ 
+-		if (Piece.esBandoContrario(posicion.getTurn(), piezaQueMueve)) {
++		if (Piece.isOppositeSide(posicion.getTurn(), piezaQueMueve)) {
+ 			return null;
+ 		}
+-		if (indice != movimientos.getNumHalfPly())
++		if (indice != movimientos.getHalfmoveNumber())
+ 			return null;
+ 		// Buscamos la casilla de destino entre las casillas validas de la
+ 		// pieza.
+@@ -542,7 +540,7 @@
+ 			// Buscamos la letra.
+ 			while ((i &lt; piezaQueMueve.getCasillasValidas().size())
+ 					&amp;&amp; (destinoLetra != piezaQueMueve.getCasillasValidas().get(
+-							i).getLetra())) {
++							i).getFile())) {
+ 				i++;
+ 				// Comprobamos si el numero de la letra encontrada coincide.
+ 			}
+@@ -550,7 +548,7 @@
+ 				// Si se entra en el siguiente caso, es que el movimiento es
+ 				// valido
+ 				if (destinoNum == piezaQueMueve.getCasillasValidas().get(i)
+-						.getLetra()) {
++						.getFile()) {
+ 					mov = new Movement();
+ 					mov.setCasillaOrigen(new Square(origenLetra, origenNum));
+ 					mov
+@@ -558,7 +556,7 @@
+ 									destinoNum));
+ 					mov.setNumeroMovimiento(posicion.getFullmoveNumber());
+ 					mov.setBando(posicion.getTurn());
+-					mov.setTipoPieza(piezaQueMueve.getTipo());
++					mov.setTipoPieza(piezaQueMueve.getType());
+ 
+ 					// Si se come ponemos el contador a 0
+ 					if (!posicion.isEmpty(destinoLetra, destinoNum)) {
+@@ -567,17 +565,17 @@
+ 						mov.setCasillaComer(new Square(destinoLetra,
+ 								destinoNum));
+ 						mov.setTipoPiezaComida(posicion.getPieza(destinoLetra,
+-								destinoNum).getTipo());
++								destinoNum).getType());
+ 						posicion.removePiece(mov.getCasillaComer());
+ 					}
+ 
+ 					// Se hacen los calculos especiales si se trata de un peon
+-					if (piezaQueMueve.getTipo() == Tipo.PEON) {
++					if (piezaQueMueve.getType() == Type.PAWN) {
+ 						// Se borra la pieza correspondiente si se come al paso
+ 						if (Math.abs(destinoLetra - origenLetra) == 1
+ 								&amp;&amp; posicion.isEmpty(destinoLetra, destinoNum)) {
+ 							mov.setTipoPiezaComida(posicion.getPieza(
+-									destinoLetra, origenNum).getTipo());
++									destinoLetra, origenNum).getType());
+ 							mov.setCasillaComer(new Square(destinoLetra,
+ 									origenNum));
+ 							posicion.removePiece(mov.getCasillaComer());
+@@ -595,7 +593,7 @@
+ 							// if (mostrarDialogoCoronacion) {
+ 							// mostrarDialogoCoronacion ();
+ 							// }
+-							piezaQueMueve = new Piece(piezaQueMueve.getBando(),
++							piezaQueMueve = new Piece(piezaQueMueve.getSide(),
+ 									coronar);
+ 
+ 							mov.setCoronacion(coronar);
+@@ -604,7 +602,7 @@
+ 						hash.borrarTabla();
+ 					}
+ 					// Se hacen los calculos especiales si se trata de un rey
+-					if (piezaQueMueve.getTipo() == Tipo.REY) {
++					if (piezaQueMueve.getType() == Type.KING) {
+ 						// Movemos las torres en caso de enroque
+ 						if ((destinoLetra - origenLetra) == 2) {
+ 							Piece torre = posicion.getPieza('h', origenNum);
+@@ -664,36 +662,36 @@
+ 	public Movement goBack() {
+ 		Movement mov;
+ 		Piece piezaQueMueve;
+-		if (indice &lt; movimientos.getNumHalfPly()) {
+-			mov = movimientos.getMovimiento(indice);
++		if (indice &lt; movimientos.getHalfmoveNumber()) {
++			mov = movimientos.getMove(indice);
+ 			piezaQueMueve = posicion.getPieza(mov.getCasillaOrigen());
+ 			// Si se come al paso
+-			if (piezaQueMueve.getTipo() == Tipo.PEON
+-					&amp;&amp; Math.abs(mov.getCasillaDestino().getLetra()
+-							- mov.getCasillaOrigen().getLetra()) == 1
++			if (piezaQueMueve.getType() == Type.PAWN
++					&amp;&amp; Math.abs(mov.getCasillaDestino().getFile()
++							- mov.getCasillaOrigen().getFile()) == 1
+ 					&amp;&amp; posicion.isEmpty(mov.getCasillaDestino())) {
+ 				posicion.removePiece(mov.getCasillaComer());
+ 			}
+ 			// Si se corona
+ 			if (mov.getCoronacion() != null) {
+-				piezaQueMueve = new Piece(piezaQueMueve.getBando(), mov
++				piezaQueMueve = new Piece(piezaQueMueve.getSide(), mov
+ 						.getCoronacion());
+ 			}
+ 			// Se hacen los calculos especiales si se trata de un rey
+-			if (piezaQueMueve.getTipo() == Tipo.REY) {
++			if (piezaQueMueve.getType() == Type.KING) {
+ 				// Movemos las torres en caso de enroque
+ 				Square origen = mov.getCasillaOrigen();
+ 				Square destino = mov.getCasillaDestino();
+-				if ((destino.getLetra() - origen.getLetra()) == 2) {
+-					Piece torre = posicion.getPieza('h', origen.getNumero());
+-					posicion.removePiece('h', origen.getNumero());
+-					posicion.setPiece(torre, 'f', origen.getNumero());
++				if ((destino.getFile() - origen.getFile()) == 2) {
++					Piece torre = posicion.getPieza('h', origen.getRank());
++					posicion.removePiece('h', origen.getRank());
++					posicion.setPiece(torre, 'f', origen.getRank());
+ 				} else {
+-					if ((destino.getLetra() - origen.getLetra()) == -2) {
++					if ((destino.getFile() - origen.getFile()) == -2) {
+ 						Piece torre = posicion
+-								.getPieza('a', origen.getNumero());
+-						posicion.removePiece('a', origen.getNumero());
+-						posicion.setPiece(torre, 'd', origen.getNumero());
++								.getPieza('a', origen.getRank());
++						posicion.removePiece('a', origen.getRank());
++						posicion.setPiece(torre, 'd', origen.getRank());
+ 					}
+ 				}
+ 			}
+@@ -725,34 +723,34 @@
+ 		Piece piezaQueMueve;
+ 		if (indice &gt; 0) {
+ 			indice--;
+-			mov = movimientos.getMovimiento(indice);
++			mov = movimientos.getMove(indice);
+ 			posicion.setFullmoveNumber(mov.getNumeroMovimiento());
+ 			piezaQueMueve = posicion.getPieza(mov.getCasillaDestino());
+ 			if (mov.getCoronacion() != null) {
+-				piezaQueMueve = new Piece(piezaQueMueve.getBando(), mov
++				piezaQueMueve = new Piece(piezaQueMueve.getSide(), mov
+ 						.getCoronacion());
+ 			}
+-			if (piezaQueMueve.getTipo() == Tipo.REY) {
++			if (piezaQueMueve.getType() == Type.KING) {
+ 				// Movemos las torres en caso de enroque
+ 				Square origen = mov.getCasillaOrigen();
+ 				Square destino = mov.getCasillaDestino();
+-				if ((destino.getLetra() - origen.getLetra()) == 2) {
+-					Piece torre = posicion.getPieza('h', origen.getNumero());
+-					posicion.removePiece('h', origen.getNumero());
+-					posicion.setPiece(torre, 'f', origen.getNumero());
++				if ((destino.getFile() - origen.getFile()) == 2) {
++					Piece torre = posicion.getPieza('h', origen.getRank());
++					posicion.removePiece('h', origen.getRank());
++					posicion.setPiece(torre, 'f', origen.getRank());
+ 				} else {
+-					if ((destino.getLetra() - origen.getLetra()) == -2) {
++					if ((destino.getFile() - origen.getFile()) == -2) {
+ 						Piece torre = posicion
+-								.getPieza('a', origen.getNumero());
+-						posicion.removePiece('a', origen.getNumero());
+-						posicion.setPiece(torre, 'd', origen.getNumero());
++								.getPieza('a', origen.getRank());
++						posicion.removePiece('a', origen.getRank());
++						posicion.setPiece(torre, 'd', origen.getRank());
+ 					}
+ 				}
+ 			}
+ 			posicion.removePiece(mov.getCasillaDestino());
+ 			if (mov.getTipoPiezaComida() != null) {
+ 				posicion.setPiece(new Piece(
+-						piezaQueMueve.getBando() == Side.WHITE ? Side.WHITE
++						piezaQueMueve.getSide() == Side.WHITE ? Side.WHITE
+ 								: Side.BLACK, mov.getTipoPieza()), mov
+ 						.getCasillaComer());
+ 			}
+@@ -802,21 +800,21 @@
+ 				pieza = posicion.getPieza(i, j);
+ 				if (pieza != null) {
+ 					if (posibleMatInsuf) {
+-						if (pieza.getTipo() != Tipo.REY) {
++						if (pieza.getType() != Type.KING) {
+ 							fin2 = true;
+ 						}
+ 					} else {
+-						switch (pieza.getTipo()) {
+-						case PEON:
+-						case DAMA:
+-						case TORRE:
++						switch (pieza.getType()) {
++						case PAWN:
++						case QUEEN:
++						case ROOK:
+ 							fin2 = true;
+ 							break;
+-						case ALFIL:
+-						case CABALLO:
++						case BISHOP:
++						case KNIGHT:
+ 							posibleMatInsuf = true;
+ 							break;
+-						case REY:
++						case KING:
+ 							break;
+ 						}
+ 					}
+@@ -837,7 +835,7 @@
+ 			while (j &lt;= '8' &amp;&amp; !fin) {
+ 				pieza = posicion.getPieza(i, j);
+ 				if ((pieza != null)
+-						&amp;&amp; (!Piece.esBandoContrario(posicion.getTurn(), pieza))
++						&amp;&amp; (!Piece.isOppositeSide(posicion.getTurn(), pieza))
+ 						&amp;&amp; (!pieza.getCasillasValidas().isEmpty())) {
+ 					fin = true;
+ 				}
+@@ -883,7 +881,7 @@
+ 	public Movement moveALG(String mov) {
+ 		char origenLetra = '\0', origenNum = '\0', destinoLetra = '\0', destinoNum = '\0';
+ 		char tipoPieza = 'P';
+-		Tipo piezaCoronacion = null;
++		Type piezaCoronacion = null;
+ 		int contadorOesEnroque = 0, i;
+ 		boolean finDestino = false;
+ 
+@@ -920,7 +918,7 @@
+ 				break;
+ 			case 'B':
+ 				if (i != 0) {
+-					piezaCoronacion = Tipo.ALFIL;
++					piezaCoronacion = Type.BISHOP;
+ 				} else {
+ 					tipoPieza = 'A';
+ 				}
+@@ -930,21 +928,21 @@
+ 				break;
+ 			case 'N':
+ 				if (i != 0) {
+-					piezaCoronacion = Tipo.CABALLO;
++					piezaCoronacion = Type.KNIGHT;
+ 				} else {
+ 					tipoPieza = 'C';
+ 				}
+ 				break;
+ 			case 'Q':
+ 				if (i != 0) {
+-					piezaCoronacion = Tipo.DAMA;
++					piezaCoronacion = Type.QUEEN;
+ 				} else {
+ 					tipoPieza = 'D';
+ 				}
+ 				break;
+ 			case 'R':
+ 				if (i != 0) {
+-					piezaCoronacion = Tipo.TORRE;
++					piezaCoronacion = Type.ROOK;
+ 				} else {
+ 					tipoPieza = 'T';
+ 				}
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board2D.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board2D.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/Board2D.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -17,7 +17,7 @@
+ import javax.swing.JPanel;
+ 
+ import com.mihail.chess.Board.Side;
+-import com.mihail.chess.Piece.Tipo;
++import com.mihail.chess.Piece.Type;
+ 
+ /**
+  * Esta clase se encarga de proporcionar una vista b&#225;sica de la l&#243;gica, usada
+@@ -242,7 +242,7 @@
+ 					}
+ 
+ 					//g.drawImage(piezas[bandoToInt(temp.getBando())][tipoToInt(temp.getTipo())], i * TAM, j * TAM, null);
+-					g.drawImage(piezas[bandoToInt(temp.getBando())][tipoToInt(temp.getTipo())], i * TAM, j * TAM, TAM, TAM, null);
++					g.drawImage(piezas[bandoToInt(temp.getSide())][tipoToInt(temp.getType())], i * TAM, j * TAM, TAM, TAM, null);
+ 				}
+ 			}
+ 
+@@ -415,12 +415,12 @@
+ 	
+ 	public void setPieza(Piece pieza, Square casilla) {
+ 		tablero.setPiece(pieza, casilla);
+-		repintarCasilla(casilla.getLetra() - 'a', casilla.getNumero()-'1');
++		repintarCasilla(casilla.getFile() - 'a', casilla.getRank()-'1');
+ 	}
+ 	
+ 	public void borrarPieza(Square casilla) {
+ 		tablero.removePiece(casilla);
+-		repintarCasilla(casilla.getLetra() - 'a', casilla.getNumero()-'1');
++		repintarCasilla(casilla.getFile() - 'a', casilla.getRank()-'1');
+ 	}
+ 	
+ 	public void setFEN(String pos) {
+@@ -508,38 +508,38 @@
+ 		return 1;
+ 	}
+ 	
+-	private int tipoToInt(Tipo tipo) {
++	private int tipoToInt(Type tipo) {
+ 		switch(tipo) {
+-		case PEON:
++		case PAWN:
+ 			return 0;
+-		case CABALLO:
++		case KNIGHT:
+ 			return 1;
+-		case ALFIL:
++		case BISHOP:
+ 			return 2;
+-		case TORRE:
++		case ROOK:
+ 			return 3;
+-		case DAMA:
++		case QUEEN:
+ 			return 4;
+-		case REY:
++		case KING:
+ 			return 5;
+ 		}
+ 		return -1;
+ 	}
+ 	
+-	private Tipo intToTipo(int i) {
++	private Type intToTipo(int i) {
+ 		switch(i) {
+ 		case 0:
+-			return Tipo.PEON;
++			return Type.PAWN;
+ 		case 1:
+-			return Tipo.CABALLO;
++			return Type.KNIGHT;
+ 		case 2:
+-			return Tipo.ALFIL;
++			return Type.BISHOP;
+ 		case 3:
+-			return Tipo.TORRE;
++			return Type.ROOK;
+ 		case 4:
+-			return Tipo.DAMA;
++			return Type.QUEEN;
+ 		case 5:
+-			return Tipo.REY;
++			return Type.KING;
+ 		}
+ 		return null;
+ 	}
+
+Modified: trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -14,7 +14,7 @@
+ import javax.swing.ImageIcon;
+ 
+ import com.mihail.chess.Board.Side;
+-import com.mihail.chess.Piece.Tipo;
++import com.mihail.chess.Piece.Type;
+ 
+ /**
+  * Representa el tema de imagenes de piezas, texturas de las casillas, textura
+@@ -94,7 +94,7 @@
+ 		}
+ 	}
+ 	
+-	public Image getImagePiece(Side bando, Tipo tipo) {
++	public Image getImagePiece(Side bando, Type tipo) {
+ 		return pieceImages[bandoToInt(bando)][tipoToInt(tipo)];
+ 	}
+ 	
+@@ -114,19 +114,19 @@
+ 		return bando == Side.WHITE? 0:1;
+ 	}
+ 	
+-	private int tipoToInt(Tipo tipo) {
++	private int tipoToInt(Type tipo) {
+ 		switch(tipo) {
+-		case PEON:
++		case PAWN:
+ 			return 0;
+-		case CABALLO:
++		case KNIGHT:
+ 			return 1;
+-		case ALFIL:
++		case BISHOP:
+ 			return 2;
+-		case TORRE:
++		case ROOK:
+ 			return 3;
+-		case DAMA:
++		case QUEEN:
+ 			return 4;
+-		case REY:
++		case KING:
+ 			return 5;
+ 		}
+ 		return -1;
+
+Modified: trunk/MihailChessLib/com/mihail/chess/DirectionVector.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/DirectionVector.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/DirectionVector.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -42,7 +42,7 @@
+ 	 * @return Un booleano si este vector y el recibido siguen la misma
+ 	 *         direccion.
+ 	 */
+-	public boolean esMismaDireccion(DirectionVector v) {
++	public boolean isSameDirection(DirectionVector v) {
+ 		int difX, difY;
+ 
+ 		if ((x == 0 &amp;&amp; v.getX() != 0) || (y == 0 &amp;&amp; v.getY() != 0))
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Movement.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Movement.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/Movement.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -3,7 +3,7 @@
+ import static com.mihail.chess.Board.Side;
+ 
+ import com.mihail.chess.Board.Result;
+-import com.mihail.chess.Piece.Tipo;
++import com.mihail.chess.Piece.Type;
+ 
+ /**
+  * Esta clase define un objeto Movimiento, que guarda informacion sobre el
+@@ -52,7 +52,7 @@
+ 	 * Este atributo indica el tipo de pieza que es: {P,C,A,T,D,R}
+ 	 * 
+ 	 */
+-	private Tipo tipoPieza;
++	private Type tipoPieza;
+ 
+ 	/**
+ 	 * Este atributo indica la letra de la casilla donde se come. Si no se ha
+@@ -90,7 +90,7 @@
+ 	 * 'D' -&gt; Dama &lt;BR&gt;
+ 	 * 0 -&gt; No hay coronacion
+ 	 */
+-	private Tipo coronacion;
++	private Type coronacion;
+ 
+ 	/**
+ 	 * Este atributo indica el valor de contadorTablas en el momento que se
+@@ -119,7 +119,7 @@
+ 	 * Este atributo indica el tipo de la pieza que se come. Si no se ha
+ 	 * producido una captura contiene un 0.
+ 	 */
+-	private Tipo tipoPiezaComida;
++	private Type tipoPiezaComida;
+ 
+ 	/**
+ 	 * Este atributo guarda la representacion del movimiento en notacion
+@@ -159,11 +159,11 @@
+ 		this.numeroMovimiento = numeroMovimiento;
+ 	}
+ 
+-	public Tipo getTipoPieza() {
++	public Type getTipoPieza() {
+ 		return tipoPieza;
+ 	}
+ 
+-	public void setTipoPieza(Tipo tipoPieza) {
++	public void setTipoPieza(Type tipoPieza) {
+ 		this.tipoPieza = tipoPieza;
+ 	}
+ 
+@@ -183,11 +183,11 @@
+ 		this.contadorTablas = contadorTablas;
+ 	}
+ 
+-	public Tipo getCoronacion() {
++	public Type getCoronacion() {
+ 		return coronacion;
+ 	}
+ 
+-	public void setCoronacion(Tipo coronacion) {
++	public void setCoronacion(Type coronacion) {
+ 		this.coronacion = coronacion;
+ 	}
+ 
+@@ -231,11 +231,11 @@
+ 		this.notacion = notacion;
+ 	}
+ 
+-	public Tipo getTipoPiezaComida() {
++	public Type getTipoPiezaComida() {
+ 		return tipoPiezaComida;
+ 	}
+ 
+-	public void setTipoPiezaComida(Tipo tipoPiezaComida) {
++	public void setTipoPiezaComida(Type tipoPiezaComida) {
+ 		this.tipoPiezaComida = tipoPiezaComida;
+ 	}
+ }
+\ No newline at end of file
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Piece.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Piece.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/Piece.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -16,8 +16,8 @@
+ 
+ public final class Piece {
+ 
+-	public static enum Tipo {
+-		PEON, CABALLO, ALFIL, TORRE, DAMA, REY
++	public static enum Type {
++		PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING
+ 	}
+ 
+ 	// Atributos
+@@ -37,7 +37,7 @@
+ 	 * 'D' -&gt; dama &lt;BR&gt;
+ 	 * 'R' -&gt; rey
+ 	 */
+-	private Tipo tipo;
++	private Type tipo;
+ 
+ 	private Square casilla;
+ 
+@@ -63,12 +63,12 @@
+ 	 *            Es el tipo de la pieza {P,C,A,T,D,R}
+ 	 * @see #tipo
+ 	 */
+-	public Piece(Side ban, Tipo claseDePieza) {
++	public Piece(Side ban, Type claseDePieza) {
+ 		bando = ban;
+ 		tipo = claseDePieza;
+ 		casilla = new Square();
+ 		switch (tipo) {
+-		case PEON:
++		case PAWN:
+ 			direcciones = new DirectionVector[1];
+ 			if (bando == Side.WHITE)
+ 				direcciones[0] = new DirectionVector(0, 1);
+@@ -76,7 +76,7 @@
+ 				direcciones[0] = new DirectionVector(0, -1);
+ 			casillasValidas = new ArrayList&lt;Square&gt;(4);
+ 			break;
+-		case TORRE:
++		case ROOK:
+ 			direcciones = new DirectionVector[4];
+ 			direcciones[0] = new DirectionVector(1, 0);
+ 			direcciones[1] = new DirectionVector(-1, 0);
+@@ -84,7 +84,7 @@
+ 			direcciones[3] = new DirectionVector(0, -1);
+ 			casillasValidas = new ArrayList&lt;Square&gt;(13);
+ 			break;
+-		case ALFIL:
++		case BISHOP:
+ 			direcciones = new DirectionVector[4];
+ 			direcciones[0] = new DirectionVector(1, 1);
+ 			direcciones[1] = new DirectionVector(-1, 1);
+@@ -92,7 +92,7 @@
+ 			direcciones[3] = new DirectionVector(-1, -1);
+ 			casillasValidas = new ArrayList&lt;Square&gt;(13);
+ 			break;
+-		case CABALLO:
++		case KNIGHT:
+ 			direcciones = new DirectionVector[8];
+ 			direcciones[0] = new DirectionVector(1, 2);
+ 			direcciones[1] = new DirectionVector(-1, 2);
+@@ -105,7 +105,7 @@
+ 			direcciones[7] = new DirectionVector(-2, -1);
+ 			casillasValidas = new ArrayList&lt;Square&gt;(8);
+ 			break;
+-		case REY:
++		case KING:
+ 			direcciones = new DirectionVector[8];
+ 			direcciones[0] = new DirectionVector(1, 0);
+ 			direcciones[1] = new DirectionVector(-1, 0);
+@@ -117,7 +117,7 @@
+ 			direcciones[7] = new DirectionVector(-1, -1);
+ 			casillasValidas = new ArrayList&lt;Square&gt;(8);
+ 			break;
+-		case DAMA:
++		case QUEEN:
+ 			direcciones = new DirectionVector[8];
+ 			direcciones[0] = new DirectionVector(1, 0);
+ 			direcciones[1] = new DirectionVector(-1, 0);
+@@ -137,13 +137,11 @@
+ 	 * 
+ 	 * @param pieza1
+ 	 *            Pieza para saber si es de bando contrario a pieza2.
+-	 * @param pieza2
+-	 *            La otra pieza.
+ 	 * @return Devuelve true cuando pieza1 y pieza2 sean de bandos contrarios,
+ 	 *         false cuando sean del mismo bando.
+ 	 */
+-	public final static boolean esBandoContrario(Piece pieza1, Piece pieza2) {
+-		return pieza1.bando != pieza2.bando;
++	public final boolean isOppositeSide(Piece pieza1) {
++		return pieza1.bando != this.bando;
+ 	}
+ 
+ 	/**
+@@ -157,7 +155,7 @@
+ 	 * @return Devuelve true cuando pieza sea del bando contrario al que le toca
+ 	 *         mover, false si es del mismo bando
+ 	 */
+-	public final static boolean esBandoContrario(Side turno, Piece pieza) {
++	public final static boolean isOppositeSide(Side turno, Piece pieza) {
+ 		return turno != pieza.bando;
+ 	}
+ 
+@@ -169,15 +167,15 @@
+ 	 * @param n
+ 	 *            Es el numero de destino que queremos a&#241;adir
+ 	 */
+-	public void anadirMov(char let, char n) {
++	public void addMove(char let, char n) {
+ 		this.casillasValidas.add(new Square(let, n));
+ 	}
+ 
+-	public void anadirMov(Square c) {
++	public void addMove(Square c) {
+ 		this.casillasValidas.add(c);
+ 	}
+ 
+-	public Side getBando() {
++	public Side getSide() {
+ 		return bando;
+ 	}
+ 
+@@ -185,35 +183,35 @@
+ 		return casillasValidas;
+ 	}
+ 
+-	public DirectionVector[] getDirecciones() {
++	public DirectionVector[] getDirections() {
+ 		return direcciones;
+ 	}
+ 
+-	public Tipo getTipo() {
++	public Type getType() {
+ 		return tipo;
+ 	}
+ 
+-	public char getLetra() {
+-		return casilla.getLetra();
++	public char getFile() {
++		return casilla.getFile();
+ 	}
+ 
+-	public void setLetra(char let) {
+-		casilla.setLetra(let);
++	public void setFile(char let) {
++		casilla.setFile(let);
+ 	}
+ 
+-	public char getNum() {
+-		return casilla.getNumero();
++	public char getRank() {
++		return casilla.getRank();
+ 	}
+ 
+-	public void setNum(char num) {
+-		casilla.setNumero(num);
++	public void setRank(char num) {
++		casilla.setRank(num);
+ 	}
+ 
+-	public Square getCasilla() {
++	public Square getSquare() {
+ 		return casilla;
+ 	}
+ 
+-	public void setCasilla(Square casilla) {
++	public void setSquare(Square casilla) {
+ 		this.casilla = casilla;
+ 	}
+ 	
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Position.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Position.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/Position.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -1,10 +1,10 @@
+ package com.mihail.chess;
+ 
+ import static com.mihail.chess.Board.Side;
+-import static com.mihail.chess.Piece.Tipo;
++import static com.mihail.chess.Piece.Type;
+ 
+ import com.mihail.chess.Board.Result;
+-import com.mihail.chess.Piece.Tipo;
++import com.mihail.chess.Piece.Type;
+ 
+ public class Position {
+ 
+@@ -137,19 +137,19 @@
+ 	 *         R -&gt; K &lt;BR&gt;
+ 	 *         Otro caso -&gt; \0
+ 	 */
+-	private final static char tipoToEnglish(Tipo t) {
++	private final static char tipoToEnglish(Type t) {
+ 		switch (t) {
+-		case ALFIL:
++		case BISHOP:
+ 			return 'B';
+-		case CABALLO:
++		case KNIGHT:
+ 			return 'N';
+-		case DAMA:
++		case QUEEN:
+ 			return 'Q';
+-		case PEON:
++		case PAWN:
+ 			return 'P';
+-		case REY:
++		case KING:
+ 			return 'K';
+-		case TORRE:
++		case ROOK:
+ 			return 'R';
+ 		default:
+ 			return '\0';
+@@ -185,19 +185,19 @@
+ 	 *         R -&gt; 5 &lt;BR&gt;
+ 	 *         Otro caso -&gt; -1
+ 	 */
+-	private final static int tipoToInt(Tipo c) {
++	private final static int tipoToInt(Type c) {
+ 		switch (c) {
+-		case PEON:
++		case PAWN:
+ 			return 0;
+-		case CABALLO:
++		case KNIGHT:
+ 			return 1;
+-		case ALFIL:
++		case BISHOP:
+ 			return 2;
+-		case TORRE:
++		case ROOK:
+ 			return 3;
+-		case DAMA:
++		case QUEEN:
+ 			return 4;
+-		case REY:
++		case KING:
+ 			return 5;
+ 		default:
+ 			return -1;
+@@ -220,11 +220,11 @@
+ 				else {
+ 					if (cont &gt; 0)
+ 						cad += cont;
+-					if (p.getBando() == Side.WHITE)
+-						cad += tipoToEnglish(p.getTipo());
++					if (p.getSide() == Side.WHITE)
++						cad += tipoToEnglish(p.getType());
+ 					else
+ 						cad += (Character
+-								.toLowerCase(tipoToEnglish(p.getTipo())));
++								.toLowerCase(tipoToEnglish(p.getType())));
+ 					cont = 0;
+ 				}
+ 			}
+@@ -287,51 +287,51 @@
+ 		for (int i = 0; i &lt; FEN[0].length(); i++) {
+ 			switch (FEN[0].charAt(i)) {
+ 			case 'P':
+-				setPiece(new Piece(Side.WHITE, Tipo.PEON), let, num);
++				setPiece(new Piece(Side.WHITE, Type.PAWN), let, num);
+ 				let++;
+ 				break;
+ 			case 'p':
+-				setPiece(new Piece(Side.BLACK, Tipo.PEON), let, num);
++				setPiece(new Piece(Side.BLACK, Type.PAWN), let, num);
+ 				let++;
+ 				break;
+ 			case 'N':
+-				setPiece(new Piece(Side.WHITE, Tipo.CABALLO), let, num);
++				setPiece(new Piece(Side.WHITE, Type.KNIGHT), let, num);
+ 				let++;
+ 				break;
+ 			case 'n':
+-				setPiece(new Piece(Side.BLACK, Tipo.CABALLO), let, num);
++				setPiece(new Piece(Side.BLACK, Type.KNIGHT), let, num);
+ 				let++;
+ 				break;
+ 			case 'B':
+-				setPiece(new Piece(Side.WHITE, Tipo.ALFIL), let, num);
++				setPiece(new Piece(Side.WHITE, Type.BISHOP), let, num);
+ 				let++;
+ 				break;
+ 			case 'b':
+-				setPiece(new Piece(Side.BLACK, Tipo.ALFIL), let, num);
++				setPiece(new Piece(Side.BLACK, Type.BISHOP), let, num);
+ 				let++;
+ 				break;
+ 			case 'R':
+-				setPiece(new Piece(Side.WHITE, Tipo.TORRE), let, num);
++				setPiece(new Piece(Side.WHITE, Type.ROOK), let, num);
+ 				let++;
+ 				break;
+ 			case 'r':
+-				setPiece(new Piece(Side.BLACK, Tipo.TORRE), let, num);
++				setPiece(new Piece(Side.BLACK, Type.ROOK), let, num);
+ 				let++;
+ 				break;
+ 			case 'Q':
+-				setPiece(new Piece(Side.WHITE, Tipo.DAMA), let, num);
++				setPiece(new Piece(Side.WHITE, Type.QUEEN), let, num);
+ 				let++;
+ 				break;
+ 			case 'q':
+-				setPiece(new Piece(Side.BLACK, Tipo.DAMA), let, num);
++				setPiece(new Piece(Side.BLACK, Type.QUEEN), let, num);
+ 				let++;
+ 				break;
+ 			case 'K':
+-				setPiece(new Piece(Side.WHITE, Tipo.REY), let, num);
++				setPiece(new Piece(Side.WHITE, Type.KING), let, num);
+ 				let++;
+ 				break;
+ 			case 'k':
+-				setPiece(new Piece(Side.BLACK, Tipo.REY), let, num);
++				setPiece(new Piece(Side.BLACK, Type.KING), let, num);
+ 				let++;
+ 				break;
+ 			case '/':
+@@ -443,7 +443,7 @@
+ 	}
+ 	
+ 	public Piece getPieza(Square c) {
+-		return getPieza(c.getLetra(), c.getNumero());
++		return getPieza(c.getFile(), c.getRank());
+ 	}
+ 
+ 	/**
+@@ -498,10 +498,10 @@
+ 		if (b == Side.WHITE) {
+ 			Piece p = getPieza('h', '1');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getLetra() == 'e'
+-					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getNumero() == '1'
+-					&amp;&amp; p.getBando() == Side.WHITE
+-					&amp;&amp; p.getTipo() == Tipo.TORRE) {
++					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getFile() == 'e'
++					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getRank() == '1'
++					&amp;&amp; p.getSide() == Side.WHITE
++					&amp;&amp; p.getType() == Type.ROOK) {
+ 				enroque[0][0] = c;
+ 				return true;
+ 			} else
+@@ -509,9 +509,9 @@
+ 		} else if (b == Side.BLACK) {
+ 			Piece p = getPieza('h', '8');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getLetra() == 'e'
+-					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getNumero() == '8'
+-					&amp;&amp; p.getBando() == Side.BLACK &amp;&amp; p.getTipo() == Tipo.TORRE) {
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getFile() == 'e'
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getRank() == '8'
++					&amp;&amp; p.getSide() == Side.BLACK &amp;&amp; p.getType() == Type.ROOK) {
+ 				enroque[1][0] = c;
+ 				return true;
+ 			} else
+@@ -540,10 +540,10 @@
+ 		if (b == Side.WHITE) {
+ 			Piece p = getPieza('a', '1');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getLetra() == 'e'
+-					&amp;&amp; kingPosition[0].getNumero() == '1'
+-					&amp;&amp; p.getBando() == Side.WHITE
+-					&amp;&amp; p.getTipo() == Tipo.TORRE) {
++					&amp;&amp; kingPosition[bandoToInt(Side.WHITE)].getFile() == 'e'
++					&amp;&amp; kingPosition[0].getRank() == '1'
++					&amp;&amp; p.getSide() == Side.WHITE
++					&amp;&amp; p.getType() == Type.ROOK) {
+ 				enroque[0][1] = c;
+ 				return true;
+ 			} else
+@@ -551,9 +551,9 @@
+ 		} else if (b == Side.BLACK) {
+ 			Piece p = getPieza('a', '8');
+ 			if (p != null
+-					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getLetra() == 'e'
+-					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getNumero() == '8'
+-					&amp;&amp; p.getBando() == Side.BLACK &amp;&amp; p.getTipo() == Tipo.TORRE) {
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getFile() == 'e'
++					&amp;&amp; kingPosition[bandoToInt(Side.BLACK)].getRank() == '8'
++					&amp;&amp; p.getSide() == Side.BLACK &amp;&amp; p.getType() == Type.ROOK) {
+ 				enroque[1][1] = c;
+ 				return true;
+ 			} else
+@@ -582,24 +582,24 @@
+ 	 *            Es el numero de la casilla
+ 	 */
+ 	public void setPiece(Piece pieza, char letra, char num) {
+-		pieza.setLetra(letra);
+-		pieza.setNum(num);
++		pieza.setFile(letra);
++		pieza.setRank(num);
+ 		tabla[num - '1'][letra - 'a'] = pieza;
+ 		clavePosicion = clavePosicion
+-				^ indices[bandoToInt(pieza.getBando())][tipoToInt(pieza
+-						.getTipo())][num - '1'][letra - 'a'];
++				^ indices[bandoToInt(pieza.getSide())][tipoToInt(pieza
++						.getType())][num - '1'][letra - 'a'];
+ 
+-		if (pieza.getTipo() == Tipo.REY) {
+-			kingPosition[bandoToInt(pieza.getBando())] = pieza.getCasilla();
++		if (pieza.getType() == Type.KING) {
++			kingPosition[bandoToInt(pieza.getSide())] = pieza.getSquare();
+ 		}
+ 	}
+ 	
+ 	public void setPiece(Piece pieza, Square casilla) {
+-		setPiece(pieza, casilla.getLetra(), casilla.getNumero());
++		setPiece(pieza, casilla.getFile(), casilla.getRank());
+ 	}
+ 
+ 	public void removePiece(Square casilla) {
+-		removePiece(casilla.getLetra(), casilla.getNumero());
++		removePiece(casilla.getFile(), casilla.getRank());
+ 	}
+ 
+ 	/**
+@@ -618,45 +618,45 @@
+ 		// Se actualiza el estado de los enroques en caso de que se borre un rey
+ 		// o una torre
+ 		if (p != null) {
+-			if (p.getTipo() == Tipo.REY) {
+-				if (p.getBando() == Side.WHITE) {
++			if (p.getType() == Type.KING) {
++				if (p.getSide() == Side.WHITE) {
+ 					enroque[0][0] = false;
+ 					enroque[0][1] = false;
+-					kingPosition[bandoToInt(Side.WHITE)].setLetra('\0');
+-					kingPosition[bandoToInt(Side.WHITE)].setNumero('\0');
++					kingPosition[bandoToInt(Side.WHITE)].setFile('\0');
++					kingPosition[bandoToInt(Side.WHITE)].setRank('\0');
+ 				} else {
+ 					enroque[1][0] = false;
+ 					enroque[1][1] = false;
+-					kingPosition[bandoToInt(Side.BLACK)].setLetra('\0');
+-					kingPosition[bandoToInt(Side.BLACK)].setNumero('\0');
++					kingPosition[bandoToInt(Side.BLACK)].setFile('\0');
++					kingPosition[bandoToInt(Side.BLACK)].setRank('\0');
+ 				}
+-			} else if (p.getTipo() == Tipo.TORRE) {
+-				if (p.getLetra() == 'a' &amp;&amp; p.getNum() == '1'
+-						&amp;&amp; p.getBando() == Side.WHITE)
++			} else if (p.getType() == Type.ROOK) {
++				if (p.getFile() == 'a' &amp;&amp; p.getRank() == '1'
++						&amp;&amp; p.getSide() == Side.WHITE)
+ 					enroque[0][1] = false;
+-				else if (p.getLetra() == 'h' &amp;&amp; p.getNum() == '1'
+-						&amp;&amp; p.getBando() == Side.WHITE)
++				else if (p.getFile() == 'h' &amp;&amp; p.getRank() == '1'
++						&amp;&amp; p.getSide() == Side.WHITE)
+ 					enroque[0][0] = false;
+-				else if (p.getLetra() == 'a' &amp;&amp; p.getNum() == '8'
+-						&amp;&amp; p.getBando() == Side.BLACK)
++				else if (p.getFile() == 'a' &amp;&amp; p.getRank() == '8'
++						&amp;&amp; p.getSide() == Side.BLACK)
+ 					enroque[1][1] = false;
+-				else if (p.getLetra() == 'h' &amp;&amp; p.getNum() == '8'
+-						&amp;&amp; p.getBando() == Side.BLACK)
++				else if (p.getFile() == 'h' &amp;&amp; p.getRank() == '8'
++						&amp;&amp; p.getSide() == Side.BLACK)
+ 					enroque[1][0] = false;
+-			} else if (p.getTipo() == Tipo.PEON) {
++			} else if (p.getType() == Type.PAWN) {
+ 				if (letra == alPaso
+-						&amp;&amp; (p.getBando() == Side.WHITE &amp;&amp; num == '4')
+-						|| (p.getBando() == Side.BLACK &amp;&amp; num == '5'))
++						&amp;&amp; (p.getSide() == Side.WHITE &amp;&amp; num == '4')
++						|| (p.getSide() == Side.BLACK &amp;&amp; num == '5'))
+ 					alPaso = 0;
+ 			}
+ 			clavePosicion = clavePosicion
+-					^ indices[bandoToInt(p.getBando())][tipoToInt(p.getTipo())][iNum][iLetra];
++					^ indices[bandoToInt(p.getSide())][tipoToInt(p.getType())][iNum][iLetra];
+ 			tabla[num - '1'][letra - 'a'] = null;
+ 		}
+ 	}
+ 	
+ 	public boolean isEmpty(Square c) {
+-		return isEmpty(c.getLetra(), c.getNumero());
++		return isEmpty(c.getFile(), c.getRank());
+ 	}
+ 
+ 	/**
+@@ -704,12 +704,12 @@
+ 		Piece p;
+ 		if (this.turno == Side.BLACK) {
+ 			p = getPieza(alPaso, '4');
+-			encontrado = p != null &amp;&amp; p.getBando() == Side.WHITE
+-					&amp;&amp; p.getTipo() == Tipo.PEON;
++			encontrado = p != null &amp;&amp; p.getSide() == Side.WHITE
++					&amp;&amp; p.getType() == Type.PAWN;
+ 		} else {
+ 			p = getPieza(alPaso, '5');
+-			encontrado = p != null &amp;&amp; p.getBando() == Side.BLACK
+-					&amp;&amp; p.getTipo() == Tipo.PEON;
++			encontrado = p != null &amp;&amp; p.getSide() == Side.BLACK
++					&amp;&amp; p.getType() == Type.PAWN;
+ 		}
+ 		if (encontrado)
+ 			this.alPaso = alPaso;
+@@ -766,9 +766,9 @@
+ 	private String generarNotacionALG (Movement mov) {
+ 		StringBuffer temp = new StringBuffer ();
+ 
+-		if (mov.getTipoPieza() == Tipo.REY) {
+-			if (Math.abs (mov.getCasillaOrigen().getLetra() - mov.getCasillaDestino().getLetra() ) == 2) {
+-				if (mov.getCasillaDestino().getLetra() == 'g') {
++		if (mov.getTipoPieza() == Type.KING) {
++			if (Math.abs (mov.getCasillaOrigen().getFile() - mov.getCasillaDestino().getFile() ) == 2) {
++				if (mov.getCasillaDestino().getFile() == 'g') {
+ 					temp.append (&quot;O-O&quot;);
+ 				}
+ 				else { // mov.destinoLetra == 'c'
+@@ -777,25 +777,25 @@
+ 				return temp.toString ();
+ 			}
+ 		}
+-		if (mov.getTipoPieza() != Tipo.PEON) {
++		if (mov.getTipoPieza() != Type.PAWN) {
+ 			temp.append (tipoToEnglish (mov.getTipoPieza()));
+ 		}
+ 		Piece pieza = getPieza (mov.getCasillaDestino());
+ 		switch (mov.getTipoPieza()) {
+-			case PEON:
++			case PAWN:
+ 				if (mov.getCasillaComer() != null)
+-					temp.append (mov.getCasillaOrigen().getLetra());
++					temp.append (mov.getCasillaOrigen().getFile());
+ 				break;
+-			case CABALLO:
+-				for(DirectionVector v: pieza.getDirecciones()) {
++			case KNIGHT:
++				for(DirectionVector v: pieza.getDirections()) {
+ 					try {
+ 						Piece p = getPieza(mov.getCasillaDestino().add(v));
+-						if(p!=null &amp;&amp; p.getTipo() == Tipo.CABALLO &amp;&amp; p.getBando() == pieza.getBando()) {
+-							if(mov.getCasillaOrigen().getLetra() != p.getCasilla().getLetra()) {
+-								temp.append(mov.getCasillaOrigen().getLetra());
++						if(p!=null &amp;&amp; p.getType() == Type.KNIGHT &amp;&amp; p.getSide() == pieza.getSide()) {
++							if(mov.getCasillaOrigen().getFile() != p.getSquare().getFile()) {
++								temp.append(mov.getCasillaOrigen().getFile());
+ 								break;
+ 							} else {
+-								temp.append (mov.getCasillaOrigen().getNumero());
++								temp.append (mov.getCasillaOrigen().getRank());
+ 								break;
+ 							}
+ 						}
+@@ -803,22 +803,22 @@
+ 				}
+ 				break;
+ 
+-			case ALFIL:
+-			case TORRE:
+-			case DAMA:
+-				for(DirectionVector v: pieza.getDirecciones()) {
++			case BISHOP:
++			case ROOK:
++			case QUEEN:
++				for(DirectionVector v: pieza.getDirections()) {
+ 					try {
+ 						Square destino = mov.getCasillaDestino().add(v);
+ 						Piece p;
+ 						while((p=getPieza(destino))==null) {
+ 							destino.add(v);
+ 						}
+-						if(p!=null &amp;&amp; p.getTipo() == pieza.getTipo() &amp;&amp; p.getBando() == pieza.getBando()) {
+-							if(mov.getCasillaOrigen().getLetra() != p.getCasilla().getLetra()) {
+-								temp.append(mov.getCasillaOrigen().getLetra());
++						if(p!=null &amp;&amp; p.getType() == pieza.getType() &amp;&amp; p.getSide() == pieza.getSide()) {
++							if(mov.getCasillaOrigen().getFile() != p.getSquare().getFile()) {
++								temp.append(mov.getCasillaOrigen().getFile());
+ 								break;
+ 							} else {
+-								temp.append (mov.getCasillaOrigen().getNumero());
++								temp.append (mov.getCasillaOrigen().getRank());
+ 								break;
+ 							}
+ 						}
+@@ -856,9 +856,9 @@
+ 
+ 	void setPiezaInternal(Piece p, char letra, char num) {
+ 		tabla[num - '1'][letra - 'a'] = p;
+-		if (p.getTipo() == Tipo.REY) {
+-			kingPosition[bandoToInt(p.getBando())].setLetra(letra);
+-			kingPosition[bandoToInt(p.getBando())].setNumero(num);
++		if (p.getType() == Type.KING) {
++			kingPosition[bandoToInt(p.getSide())].setFile(letra);
++			kingPosition[bandoToInt(p.getSide())].setRank(num);
+ 		}
+ 	}
+ }
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Square.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Square.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/Square.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -71,7 +71,7 @@
+ 	 * @return La letra de la casilla
+ 	 */
+ 
+-	public char getLetra() {
++	public char getFile() {
+ 		return letra;
+ 	}
+ 	
+@@ -81,7 +81,7 @@
+ 	 * @param letra La letra de la casilla
+ 	 */
+ 
+-	public void setLetra(char letra) {
++	public void setFile(char letra) {
+ 		this.letra = letra;
+ 	}
+ 	
+@@ -91,7 +91,7 @@
+ 	 * @return El numero de la casilla
+ 	 */
+ 
+-	public char getNumero() {
++	public char getRank() {
+ 		return numero;
+ 	}
+ 	
+@@ -101,7 +101,7 @@
+ 	 * @param numero El numero de la casilla
+ 	 */
+ 
+-	public void setNumero(char numero) {
++	public void setRank(char numero) {
+ 		this.numero = numero;
+ 	}
+ 
+
+Modified: trunk/MihailChessLib/com/mihail/chess/VariationsTree.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/VariationsTree.java	2005-08-14 13:12:03 UTC (rev 35)
++++ trunk/MihailChessLib/com/mihail/chess/VariationsTree.java	2005-08-14 13:30:00 UTC (rev 36)
+@@ -64,14 +64,14 @@
+ 	 *            Numero del movimiento
+ 	 * @return Devuelve el movimiento correspondiente a color y numero
+ 	 */
+-	public Movement getMovimiento(Side color, int numero) {
++	public Movement getMove(Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 		if (n != null)
+ 			return n.movimiento;
+ 		return null;
+ 	}
+ 	
+-	public Movement getMovimiento(int halfPly) {
++	public Movement getMove(int halfPly) {
+ 		return arbol.get(halfPly).movimiento;
+ 	}
+ 
+@@ -85,7 +85,7 @@
+ 	 * @return Un booleano que indica si para ese movimiento existen
+ 	 *         alternativas.
+ 	 */
+-	public boolean existeVariante(Side color, int numero) {
++	public boolean existsVariation(Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 
+ 		if (n != null &amp;&amp; n.variantes != null)
+@@ -102,7 +102,7 @@
+ 	 *            Numero del movimiento.
+ 	 * @return El numero de alternativas a un movimiento.
+ 	 */
+-	public int getNumVariantes(Side color, int numero) {
++	public int getVariationsNumber(Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 
+ 		if (n != null) {
+@@ -136,7 +136,7 @@
+ 	 * @param numero
+ 	 *            Numero del movimiento.
+ 	 */
+-	public void addVariante(Movement mov, Side color, int numero) {
++	public void addVariation(Movement mov, Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 
+ 		if (n.variantes == null)
+@@ -159,7 +159,7 @@
+ 	 *            Numero de variante que se quiere obtener.
+ 	 * @return Devuelve un ArbolVariantes, que es la variante del movimiento.
+ 	 */
+-	public VariationsTree getVariante(Side color, int numero, int num) {
++	public VariationsTree getVariation(Side color, int numero, int num) {
+ 		NodoArbol n = getNodo(color, numero);
+ 		if (n != null)
+ 			return n.variantes.get(num);
+@@ -171,7 +171,7 @@
+ 	 *         partida. Solo cuenta los turnos jugados, no cuenta un movimiento
+ 	 *         por negras y otro por blancas.
+ 	 */
+-	public int getNumMovimientos() {
++	public int getFullmoveNumber() {
+ 		return desplazamiento + ((arbol.size() + 1) / 2);
+ 	}
+ 
+@@ -182,7 +182,7 @@
+ 	 * @return Los medios movimientos desde el comienzo de la partida.
+ 	 */
+ 
+-	public int getNumHalfPly() {
++	public int getHalfmoveNumber() {
+ 		return arbol.size();
+ 	}
+ 
+@@ -192,7 +192,7 @@
+ 	 * @return
+ 	 */
+ 
+-	public Movement getLastMovimiento() {
++	public Movement getLastMove() {
+ 		return arbol.get(arbol.size() - 1).movimiento;
+ 	}
+ 	
+@@ -204,8 +204,8 @@
+ 	 * @param num
+ 	 */
+ 	
+-	public void promoteVariant(Side color, int numero, int num) {
+-		VariationsTree a = getVariante(color, numero, num);
++	public void promoteVariation(Side color, int numero, int num) {
++		VariationsTree a = getVariation(color, numero, num);
+ 		int indice = (numero - 1) * 2 + bandoToInt(color);
+ 		NodoArbol n = getNodo(color, numero);
+ 		
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000010.html">[Mihailchess-svn] r35 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+	<LI>Next message: <A HREF="000006.html">[Mihailchess-svn] r37 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11">[ date ]</a>
+              <a href="thread.html#11">[ thread ]</a>
+              <a href="subject.html#11">[ subject ]</a>
+              <a href="author.html#11">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

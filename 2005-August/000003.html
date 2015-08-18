@@ -1,0 +1,612 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r31 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r31%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508130042.j7D0gPeZ011768%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000002.html">
+   <LINK REL="Next"  HREF="000004.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r31 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r31%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508130042.j7D0gPeZ011768%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r31 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Sat Aug 13 02:42:25 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000002.html">[Mihailchess-svn] r30 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+        <LI>Next message: <A HREF="000004.html">[Mihailchess-svn] r32 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3">[ date ]</a>
+              <a href="thread.html#3">[ thread ]</a>
+              <a href="subject.html#3">[ subject ]</a>
+              <a href="author.html#3">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-13 02:42:21 +0200 (Sat, 13 Aug 2005)
+New Revision: 31
+
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+   trunk/MihailChessLib/com/mihail/chess/Tablero2D.java
+Log:
+Adaptado Tablero2D para usar el BoardTheme
+
+Modified: trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-12 23:35:50 UTC (rev 30)
++++ trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-13 00:42:21 UTC (rev 31)
+@@ -19,7 +19,8 @@
+ /**
+  * Representa el tema de imagenes de piezas, texturas de las casillas, textura
+  * del borde del tablero y textura de fondo del tablero. Para crear un tema
+- * basta pasarle la ruta a un archivo .mcz cuyos contenidos estan especificados
++ * basta pasarle la ruta a un archivo .mcz. Un archivo en este
++ * formato es un archivo comprimido Zip cuyos contenidos estan especificados
+  * de la siguiente manera:
+  * 
+  * Todas las imagenes podran estar en formatos que soporte Java por defecto. En la 
+@@ -27,15 +28,18 @@
+  * 
+  * Las imagenes de las piezas deberan estar formadas por el nombre de la pieza
+  * mas la inicial del bando al que pertenecen. Por ejemplo, el peon negro seria
+- * 'peonN.png', y el rey blanco 'reyB.png'.
++ * 'peonN.png', y el rey blanco 'reyB.png'. Son imagenes obligatorias.
+  * 
+- * Las casillas seran 'casillaB.png' y 'casillaN.png'.
++ * Las casillas seran 'casillaB.png' y 'casillaN.png'. Estas imagenes son optativas,
++ * y el tablero puede dibujarse sin ellas con colores lisos.
+  * 
+- * El borde del tablero 'marco.png'.
++ * El borde del tablero 'marco.png'. Esta imagen es optativa, del mismo modo que la 
++ * anterior.
+  * 
+- * El fondo del tablero 'fondo.png'.
++ * El fondo del tablero 'fondo.png'. Esta imagen es optativa, del mismo moo que la 
++ * anterior.
+  * 
+- * Ademas se debera a&#241;adir un archivo de texto, de nomre Metadata, en el
++ * Ademas se debera a&#241;adir un archivo de texto, de nombre Metadata, en el
+  * que se podra indicar cierta informacion como el autor, la fecha de creacion y el
+  * nombre del tema.
+  * 
+@@ -137,11 +141,41 @@
+ 				InputStream is = zipFile.getInputStream(entry);
+ 				String entryName = entry.getName();
+ 				System.out.println(entryName);
++				byte [] data = new byte[is.available()];
++				is.read(data);
+ 				if(entryName.equals(&quot;reyB.png&quot;)) { // Cargar todas las imagenes en funcion de los nombres
+-					byte [] data = new byte[is.available()];
+-					is.read(data);
+ 					pieceImages[5] = new ImageIcon(data).getImage();
+-				} /* ... TODO ... */
++				} else if (entryName.equals(&quot;reyN.png&quot;)) {
++					pieceImages[11] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;damaB.png&quot;)) {
++					pieceImages[4] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;damaN.png&quot;)) {
++					pieceImages[10] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;torreB.png&quot;)) {
++					pieceImages[3] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;torreN.png&quot;)) {
++					pieceImages[9] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;caballoB.png&quot;)) {
++					pieceImages[1] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;caballoN.png&quot;)) {
++					pieceImages[7] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;alfilB.png&quot;)) {
++					pieceImages[2] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;alfilN.png&quot;)) {
++					pieceImages[8] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;peonB.png&quot;)) {
++					pieceImages[0] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;peonN.png&quot;)) {
++					pieceImages[6] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;casillaB.png&quot;)) {
++					casillasImages[0] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;casillaN.png&quot;)) {
++					casillasImages[1] = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;marco.png&quot;)) {
++					marco = new ImageIcon(data).getImage();
++				} else if (entryName.equals(&quot;fondo.png&quot;)) {
++					background = new ImageIcon(data).getImage();
++				}
+ 			}
+ 		} catch (ZipException e) {
+ 			// TODO Auto-generated catch block
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Tablero2D.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Tablero2D.java	2005-08-12 23:35:50 UTC (rev 30)
++++ trunk/MihailChessLib/com/mihail/chess/Tablero2D.java	2005-08-13 00:42:21 UTC (rev 31)
+@@ -28,45 +28,34 @@
+  * @author Iago Porto D&#237;az
+  */
+ public class Tablero2D extends JPanel {
+-	/**
+-	 * Indica los diferentes tipos de casillas que el tablero puede dibujar.&lt;br&gt;
+-	 * CASILLA_LISO indica una textura formada por un unico color.&lt;br&gt;
+-	 * CASILLA_GRADIENTE indica una textura formada por dos colores que hacen un
+-	 * gradiente.&lt;br&gt;
+-	 * CASILLA_TEXTURA indica una textura que es una imagen.&lt;br&gt;
+-	 * 
+-	 */
+-	public static enum Textura {
+-		CASILLA_LISO, CASILLA_GRADIENTE, CASILLA_TEXTURA
+-	}
+ 
+ 	private static final long serialVersionUID = 1L;
+ 
+-	/**
++	/*
+ 	 * Tama&#241;o del borde del tablero.
+ 	 */
+ 	private int BORDE = 30;
+ 
+-	/**
++	/*
+ 	 * Tama&#241;o de la casilla.
+ 	 */
+ 	private int TAM;
+ 
+-	/**
++	/*
+ 	 * Tama&#241;o anterior, para comparar si es necesario redimensionar.
+ 	 * 
+ 	 * @TODO &#191;Es necesario este atributo? Queda chapucero.
+ 	 */
+ 	private int TAMant;
+ 
+-	/**
++	/*
+ 	 * Coordenada 'x' de la casilla pulsada por ultima vez [0, 8]. Sirve para
+ 	 * indicar al metodo de dibujo que la casilla indicada no se debe dibujar si
+ 	 * se esta arrastrando la pieza.
+ 	 */
+ 	protected int posX;
+ 
+-	/**
++	/*
+ 	 * Coordenada 'y' de la casilla pulsada por ultima vez [0, 8].
+ 	 */
+ 	protected int posY;
+@@ -83,9 +72,6 @@
+ 	// Versiones ajustadas al tama&#241;o correcto de las imagenes
+ 	private Image[][] piezas = new Image[2][6];
+ 
+-	// Imagenes de las piezas tal y como aparecen en el archivo
+-	private Image[][] imagenes = new Image[2][6];
+-
+ 	// Indica el sentido en el que se esta dibujando el tablero
+ 	private boolean sentido = true;
+ 
+@@ -97,7 +83,7 @@
+ 	// Indica si se esta arrastrando una pieza
+ 	private boolean arrastrando = false;
+ 
+-	/**
++	/*
+ 	 * Posicion de la pieza que se esta arrastrando. Se usa en el metodo de
+ 	 * dibujo para dibujar la pieza piezaArrastrada en el lugar correcto. TODO
+ 	 * Remodelar para a&#241;adir objetos arbitrarios al tablero, entre ellos piezas
+@@ -105,57 +91,35 @@
+ 	 */
+ 	private int posPiezaX, posPiezaY;
+ 
+-	/**
++	/*
+ 	 * Imagen de la pieza qu esta siendo arrastrada.
+ 	 */
+ 	private Image piezaArrastrada;
+ 
+-	/**
+-	 * Opciones configurables de color del tablero:
++	/*
++	 * Colores que se dibujan las casillas en caso de que el tema no lo
++	 * establezca.
+ 	 */
+-	private Textura textura = Textura.CASILLA_LISO;
+-
+ 	private Color[] colorLiso = new Color[2];
+ 
+-	private Color[] colorGradiente = new Color[2];
++	/*
++	 * Tema que esta usando el tablero para dibujarse.
++	 */
+ 
+-	private Image[] colorTextura = new Image[2];
++	private BoardTheme theme;
+ 
+-	public Tablero2D() {
+-		this(60);
++	public Tablero2D(BoardTheme theme) {
++		this(theme, 60);
+ 	}
+ 
+-	public Tablero2D(int tam) {
++	public Tablero2D(BoardTheme theme, int tam) {
+ 		super();
+ 		tablero = new Posicion();
+ 
+ 		TAM = tam;
+-		imagenes[0][0] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/peonB.png&quot;))).getImage();
+-		imagenes[0][1] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/caballoB.png&quot;))).getImage();
+-		imagenes[0][2] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/alfilB.png&quot;))).getImage();
+-		imagenes[0][3] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/torreB.png&quot;))).getImage();
+-		imagenes[0][4] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/damaB.png&quot;))).getImage();
+-		imagenes[0][5] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/reyB.png&quot;))).getImage();
+-		imagenes[1][0] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/peonN.png&quot;))).getImage();
+-		imagenes[1][1] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/caballoN.png&quot;))).getImage();
+-		imagenes[1][2] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/alfilN.png&quot;))).getImage();
+-		imagenes[1][3] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/torreN.png&quot;))).getImage();
+-		imagenes[1][4] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/damaN.png&quot;))).getImage();
+-		imagenes[1][5] = (new ImageIcon(getClass().getResource(
+-				&quot;/piezas/modernas/reyN.png&quot;))).getImage();
+ 
+ 		// this.setAutoscrolls(true);
++		this.theme = theme;
+ 
+ 		redimensionar();
+ 	}
+@@ -189,8 +153,12 @@
+ 		// g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+ 		// RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+ 
+-		g.setColor(Color.LIGHT_GRAY);
+-		g.fillRect(0, 0, getWidth(), getHeight());
++		if(theme.getBackground()==null) {
++			g.setColor(Color.LIGHT_GRAY);
++			g.fillRect(0, 0, getWidth(), getHeight());
++		} else {
++			g.drawImage(theme.getBackground(), 0, 0, this.getWidth(), this.getHeight(), null);
++		}
+ 
+ 		if (getWidth() &lt; getHeight()) {
+ 			bordeSUP = (getHeight() - getWidth()) / 2;
+@@ -214,21 +182,15 @@
+ 				// casillas blancas o negras
+ 				// if (activado) {
+ 				int v = (i + j) % 2;
++				Image textura = theme.getImageCasilla(v == 0 ? Bando.BLANCO
++						: Bando.NEGRO);
++				if (textura != null)
+ 
+-				if (textura == Textura.CASILLA_TEXTURA)
++					g.drawImage(textura, i * TAM, j * TAM, TAM, TAM, null);
+ 
+-					g.drawImage(colorTextura[v], i * TAM, j * TAM, TAM, TAM,
+-							null);
+-
+-				else if (textura == Textura.CASILLA_LISO) {
++				else {
+ 					g.setColor(colorLiso[v]);
+ 					g.fillRect(i * TAM, j * TAM, TAM, TAM);
+-				} else if (textura == Textura.CASILLA_GRADIENTE) {
+-
+-					g2d.setPaint(new GradientPaint(new Point(i * TAM, j * TAM),
+-							colorLiso[v], new Point(i * TAM + TAM, j * TAM
+-									+ TAM), colorGradiente[v]));
+-					g.fillRect(i * TAM, j * TAM, TAM, TAM);
+ 				}
+ 
+ 				// Dibujamos la casilla
+@@ -279,8 +241,8 @@
+ 						continue;
+ 					}
+ 
+-					g.drawImage(getImage(temp.getBando(), temp.getTipo()), i
+-							* TAM, j * TAM, null);
++					g.drawImage(theme.getImagePiece(temp.getBando(), temp
++							.getTipo()), i * TAM, j * TAM, null);
+ 
+ 				}
+ 			}
+@@ -310,15 +272,6 @@
+ 	}
+ 
+ 	/**
+-	 * @param borde
+-	 *            Establece el tama&#241;o del borde.
+-	 */
+-
+-	public void setBorde(int borde) {
+-		BORDE = borde;
+-	}
+-
+-	/**
+ 	 * @return Devuelve el tama&#241;o de las casilla.
+ 	 */
+ 
+@@ -425,96 +378,42 @@
+ 	}
+ 
+ 	/**
+-	 * Obtiene el modo de textura que se esta utilizando actualmente.
+-	 * 
+-	 * @return El modo de textura.
+-	 */
+-
+-	public Textura getTextura() {
+-		return textura;
+-	}
+-	
+-	/**
+-	 * Establece el modo de textura.
+-	 * 
+-	 * @param textura El modo de textura.
+-	 */
+-
+-	public void setTextura(Textura textura) {
+-		this.textura = textura;
+-	}
+-	
+-	/**
+-	 * Obtiene el color de degradado de las casillas de un color.
+-	 * 
+-	 * @param b El tipo de las casillas, blancas o negras.
+-	 * @return El color de degradado.
+-	 */
+-
+-	public Color getColorGradiente(Bando b) {
+-		return colorGradiente[bandoToInt(b)];
+-	}
+-	
+-	/**
+-	 * Establece el color de degradado de las casillas de un color. Este
+-	 * color solo se mostrara si la opcion textura esta establecida a CASILLA_GRADIENTE.
+-	 * El degradado se hara con el color establecido como liso.
+-	 * 
+-	 * @param b El tipo de las casillas, blancas o negras.
+-	 * @param colorGradiente El color de degradado.
+-	 */
+-
+-	public void setColorGradiente(Bando b, Color colorGradiente) {
+-		this.colorGradiente[bandoToInt(b)] = colorGradiente;
+-	}
+-
+-	/**
+ 	 * Obtiene el color liso de las casillas de un color.
+ 	 * 
+-	 * @param b El tipo de las casillas, blancas o negras.
++	 * @param b
++	 *            El tipo de las casillas, blancas o negras.
+ 	 * @return El color liso.
+ 	 */
+ 	public Color getColorLiso(Bando b) {
+ 		return colorLiso[bandoToInt(b)];
+ 	}
+-	
++
+ 	/**
+-	 * Establece el color liso de las casillas de un color. Este color
+-	 * solo se mostrara si la opcion textura esta establecida a 
+-	 * CASILLA_LISO.
++	 * Establece el color liso de las casillas de un color. Este color solo se
++	 * mostrara en caso de que el tema no establezca una textura para las
++	 * casillas.
+ 	 * 
+-	 * @param b El tipo de las casillas, blancas o negras.
+-	 * @param colorLiso El color liso.
++	 * @param b
++	 *            El tipo de las casillas, blancas o negras.
++	 * @param colorLiso
++	 *            El color liso.
+ 	 */
+ 
+ 	public void setColorLiso(Bando b, Color colorLiso) {
+ 		this.colorLiso[bandoToInt(b)] = colorLiso;
+ 	}
+-	
+-	/**
+-	 * Obtiene la textura de las casillas de un color.
+-	 * 
+-	 * @param b El tipo de las casillas, blancas o negras.
+-	 * @return La textura del bando indicado.
+-	 */
+ 
+-	public Image getColorTextura(Bando b) {
+-		return colorTextura[bandoToInt(b)];
+-	}
+-	
+ 	/**
+-	 * Establece la textura de las casillas de un color. Esta textura solo
+-	 * se mostrara si la opcion textura esta establecida a 
+-	 * CASILLA_TEXTURA.
++	 * Establece el tema que usa el tablero para dibujarse.
+ 	 * 
+-	 * @param b El tipo de las casillas, blancas o negras.
+-	 * @param colorTextura La imagen que queremos establecer como textura.
++	 * @param theme
++	 *            Tema a establecer.
+ 	 */
+ 
+-	public void setColorTextura(Bando b, Image colorTextura) {
+-		this.colorTextura[bandoToInt(b)] = colorTextura;
++	public void setTema(BoardTheme theme) {
++		this.theme = theme;
+ 	}
+-	
++
+ 	/*
+ 	 * Funcion para repintar la casilla indicada por el punto x, y, que debe ser
+ 	 * el centro de la casilla. TODO Modificar para que funcione con la esquina
+@@ -524,7 +423,7 @@
+ 	protected void repintarCasilla(int x, int y) {
+ 		repaint(x - TAM / 2, y - TAM / 2, TAM, TAM);
+ 	}
+-	
++
+ 	/**
+ 	 * Metodo de utilidad para obtener de forma sencilla la casilla
+ 	 * correspondiente a la que pertenece un pixel en la posicion (x, y).
+@@ -546,77 +445,55 @@
+ 		}
+ 		return new Point(posX, posY);
+ 	}
+-	
+-	protected Image getImage(Bando color, Tipo pieza) {
+-		// if (p != null) {
+-		switch (pieza) {
+-		case PEON:
+-			return piezas[bandoToInt(color)][0];
+ 
+-		case CABALLO:
+-			return piezas[bandoToInt(color)][1];
+-
+-		case ALFIL:
+-			return piezas[bandoToInt(color)][2];
+-
+-		case TORRE:
+-			return piezas[bandoToInt(color)][3];
+-
+-		case DAMA:
+-			return piezas[bandoToInt(color)][4];
+-
+-		case REY:
+-			return piezas[bandoToInt(color)][5];
+-
+-		default:
+-			return null;
+-		}
+-
+-	}
+-	
+ 	private void dibujarBorde(Graphics g) {
+-		g.setColor(Color.BLACK);
++		Image borde = theme.getMarco();
++		if (borde != null) {
++			g.drawImage(borde, 0, 0, null);
++		} else { // Dibujamos a mano
++			g.setColor(Color.BLACK);
+ 
+-		g.fillRect(0, 0, Math.min(getWidth(), getHeight()), Math.min(
+-				getWidth(), getHeight()));
+-		// char num = '8';
+-		// char let = 'a';
++			g.fillRect(0, 0, Math.min(getWidth(), getHeight()), Math.min(
++					getWidth(), getHeight()));
++			// char num = '8';
++			// char let = 'a';
+ 
+-		g.setColor(new Color(209, 193, 134));
+-		g.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 12));
++			g.setColor(new Color(209, 193, 134));
++			g.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 12));
+ 
+-		int yF = 8 * TAM + BORDE * 3 / 2 + 6;
+-		for (int i = 0; i &lt; 8; i++) {
+-			int xF = i * TAM + BORDE + TAM / 2;
+-			if (sentido) {
+-				g
+-						.drawString(new Character((char) (i + 'A')).toString(),
+-								xF, yF);
+-			} else {
+-				g.drawString(new Character((char) (7 - i + 'A')).toString(),
+-						xF, yF);
++			int yF = 8 * TAM + BORDE * 3 / 2 + 6;
++			for (int i = 0; i &lt; 8; i++) {
++				int xF = i * TAM + BORDE + TAM / 2;
++				if (sentido) {
++					g.drawString(new Character((char) (i + 'A')).toString(),
++							xF, yF);
++				} else {
++					g.drawString(
++							new Character((char) (7 - i + 'A')).toString(), xF,
++							yF);
++				}
+ 			}
+-		}
+-		int xF = BORDE / 2 - 3;
+-		for (int i = 0; i &lt; 8; i++) {
+-			yF = i * TAM + BORDE + TAM / 2;
+-			if (sentido) {
++			int xF = BORDE / 2 - 3;
++			for (int i = 0; i &lt; 8; i++) {
++				yF = i * TAM + BORDE + TAM / 2;
++				if (sentido) {
+ 
+-				g.drawString(new Integer(7 - i + 1).toString(), xF, yF);
++					g.drawString(new Integer(7 - i + 1).toString(), xF, yF);
+ 
+-			} else {
+-				g.drawString(new Integer(i + 1).toString(), xF, yF);
++				} else {
++					g.drawString(new Integer(i + 1).toString(), xF, yF);
++				}
+ 			}
+ 		}
+ 	}
+-	
++
+ 	private int bandoToInt(Bando b) {
+ 		if (b == Bando.BLANCO) {
+ 			return 0;
+ 		}
+ 		return 1;
+ 	}
+-	
++
+ 	/*
+ 	 * Funcion de utilidad que se encarga de redimensionar las imagenes al
+ 	 * tama&#241;o adecuado del tablero
+@@ -626,8 +503,8 @@
+ 		MediaTracker media = new MediaTracker(this);
+ 		for (int i = 0; i &lt; 2; i++) {
+ 			for (int j = 0; j &lt; 6; j++) {
+-				piezas[i][j] = imagenes[i][j].getScaledInstance(TAM, TAM,
+-						Image.SCALE_SMOOTH);
++				piezas[i][j] = theme.getImagePiece(Bando.BLANCO, Tipo.ALFIL)
++						.getScaledInstance(TAM, TAM, Image.SCALE_SMOOTH);
+ 				media.addImage(piezas[i][j], 1);
+ 			}
+ 		}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000002.html">[Mihailchess-svn] r30 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+	<LI>Next message: <A HREF="000004.html">[Mihailchess-svn] r32 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#3">[ date ]</a>
+              <a href="thread.html#3">[ thread ]</a>
+              <a href="subject.html#3">[ subject ]</a>
+              <a href="author.html#3">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

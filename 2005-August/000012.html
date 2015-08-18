@@ -1,0 +1,717 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r40 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r40%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508181052.j7IAqeLW027123%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000008.html">
+   <LINK REL="Next"  HREF="000013.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r40 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r40%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508181052.j7IAqeLW027123%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r40 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Thu Aug 18 12:52:40 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000008.html">[Mihailchess-svn] r39 - trunk/MihailChessLib/com/mihail/openings
+</A></li>
+        <LI>Next message: <A HREF="000013.html">[Mihailchess-svn] r41 - trunk/MihailChessLib/com/mihail/pgn
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12">[ date ]</a>
+              <a href="thread.html#12">[ thread ]</a>
+              <a href="subject.html#12">[ subject ]</a>
+              <a href="author.html#12">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-18 12:52:36 +0200 (Thu, 18 Aug 2005)
+New Revision: 40
+
+Added:
+   trunk/MihailChessLib/com/mihail/chess/Move.java
+Removed:
+   trunk/MihailChessLib/com/mihail/chess/Movement.java
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/Board.java
+   trunk/MihailChessLib/com/mihail/chess/Position.java
+   trunk/MihailChessLib/com/mihail/chess/VariationsTree.java
+Log:
+Mejor Move
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-14 13:44:19 UTC (rev 39)
++++ trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-18 10:52:36 UTC (rev 40)
+@@ -516,11 +516,11 @@
+ 	 *            Es el numero de la casilla de destino
+ 	 * @return Devuelve un objeto Movimiento o null si no esta permitido.
+ 	 */
+-	public Movement move(char origenLetra, char origenNum,
++	public Move move(char origenLetra, char origenNum,
+ 			char destinoLetra, char destinoNum) {
+ 		Piece piezaQueMueve;
+ 		int i;
+-		Movement mov;
++		Move mov;
+ 		piezaQueMueve = posicion.getPieza(origenLetra, origenNum);
+ 
+ 		// Comprobamos que en la casilla de origen hay una pieza
+@@ -549,7 +549,7 @@
+ 				// valido
+ 				if (destinoNum == piezaQueMueve.getCasillasValidas().get(i)
+ 						.getFile()) {
+-					mov = new Movement();
++					mov = new Move();
+ 					mov.setCasillaOrigen(new Square(origenLetra, origenNum));
+ 					mov
+ 							.setCasillaDestino(new Square(destinoLetra,
+@@ -659,8 +659,8 @@
+ 	 * 
+ 	 * @return El movimiento al que lleguemos en la lista de movimientos.
+ 	 */
+-	public Movement goBack() {
+-		Movement mov;
++	public Move goBack() {
++		Move mov;
+ 		Piece piezaQueMueve;
+ 		if (indice &lt; movimientos.getHalfmoveNumber()) {
+ 			mov = movimientos.getMove(indice);
+@@ -718,8 +718,8 @@
+ 	 * 
+ 	 * @return El movimiento al que lleguemos en la lista de movimientos.
+ 	 */
+-	public Movement goForward() {
+-		Movement mov;
++	public Move goForward() {
++		Move mov;
+ 		Piece piezaQueMueve;
+ 		if (indice &gt; 0) {
+ 			indice--;
+@@ -878,7 +878,7 @@
+ 	 *       con el rey, no hay que marcar la posible ambiguedad. Hay que
+ 	 *       tenerlo en cuenta.
+ 	 */
+-	public Movement moveALG(String mov) {
++	public Move moveALG(String mov) {
+ 		char origenLetra = '\0', origenNum = '\0', destinoLetra = '\0', destinoNum = '\0';
+ 		char tipoPieza = 'P';
+ 		Type piezaCoronacion = null;
+
+Copied: trunk/MihailChessLib/com/mihail/chess/Move.java (from rev 36, trunk/MihailChessLib/com/mihail/chess/Movement.java)
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Movement.java	2005-08-14 13:30:00 UTC (rev 36)
++++ trunk/MihailChessLib/com/mihail/chess/Move.java	2005-08-18 10:52:36 UTC (rev 40)
+@@ -0,0 +1,241 @@
++package com.mihail.chess;
++
++import static com.mihail.chess.Board.Side;
++
++import com.mihail.chess.Board.Result;
++import com.mihail.chess.Piece.Type;
++
++/**
++ * Esta clase define un objeto Movimiento, que guarda informacion sobre el
++ * movimiento que se realiza y sobre el estado de la partida en ese momento (qu&#233;
++ * enroques son posibles, es jaque, etc).
++ * 
++ * @author Pedro Suarez Casal
++ * @author Iago Porto Diaz
++ */
++
++public final class Move {
++
++	/**
++	 * Este atributo indica la letra de la casilla origen.
++	 */
++	// public char origenLetra;
++	/**
++	 * Este atributo indica el numero de la casilla origen.
++	 */
++	// public char origenNum;
++	private Square casillaOrigen;
++
++	/**
++	 * Este atributo indica la letra de la casilla destino.
++	 */
++	// public char destinoLetra;
++	/**
++	 * Este atributo indica el numero de la casilla destino.
++	 */
++	// public char destinoNum;
++	private Square casillaDestino;
++
++	/**
++	 * Numero de movimiento en la partida. Es el mismo numero para blancas que
++	 * para negras. Por ejemplo: en '1. e4 c5', tanto e4 como c5 compartirian el
++	 * 1 como numero de movimiento.
++	 */
++	private int numeroMovimiento;
++
++	/**
++	 * Bando que mueve.
++	 */
++	private Side bando;
++
++	/**
++	 * Este atributo indica el tipo de pieza que es: {P,C,A,T,D,R}
++	 * 
++	 */
++	private Type tipoPieza;
++
++	/**
++	 * Este atributo indica la letra de la casilla donde se come. Si no se ha
++	 * producido una captura contiene un 0.
++	 */
++	// public char casillaComerLetra;
++	/**
++	 * Este atributo indica el numero de la casilla donde se come. Si no se ha
++	 * producido una captura contiene un 0.
++	 */
++	// public char casillaComerNum;
++	private Square casillaComer;
++
++	/**
++	 * Este atributo indica si el movimiento produce un jaque.
++	 */
++	private boolean jaque;
++
++	/**
++	 * Este atributo indica si el movimiento termina la partida y quien es el
++	 * ganador o bien tablas. &lt;BR&gt;
++	 * 'B' -&gt; Ganan blancas &lt;BR&gt;
++	 * 'N' -&gt; Ganan negras &lt;BR&gt;
++	 * 'T' -&gt; Tablas &lt;BR&gt;
++	 * 0 -&gt; No ha terminado la partida
++	 */
++	private Result finPartida;
++
++	/**
++	 * Este atributo indica si se ha producido una coronacion y a que pieza se
++	 * promociona. &lt;BR&gt;
++	 * 'C' -&gt; Caballo &lt;BR&gt;
++	 * 'A' -&gt; Alfil &lt;BR&gt;
++	 * 'T' -&gt; Torre &lt;BR&gt;
++	 * 'D' -&gt; Dama &lt;BR&gt;
++	 * 0 -&gt; No hay coronacion
++	 */
++	private Type coronacion;
++
++	/**
++	 * Este atributo indica el valor de contadorTablas en el momento que se
++	 * produce el movimiento.
++	 */
++	private int contadorTablas;
++
++	/**
++	 * Este atributo indica que enroques estan disponibles para que bandos en el
++	 * momento en que se produce el movimiento. Es un array 2x2, en donde: &lt;BR&gt;
++	 * enroque[0][0] -&gt; Blancas, enroque corto &lt;BR&gt;
++	 * enroque[0][1] -&gt; Blancas, enroque largo &lt;BR&gt;
++	 * enroque[1][0] -&gt; Negras, enroque corto &lt;BR&gt;
++	 * enroque[1][1] -&gt; Negras, enroque largo &lt;BR&gt;
++	 */
++	private boolean[][] enroque;
++
++	/**
++	 * Este atributo contiene 0 en todos los casos salvo si se ha movido un peon
++	 * dos casillas. En ese caso contendra la letra de la columna del peon. Es
++	 * necesario para la captura al paso.
++	 */
++	private char alPaso;
++
++	/**
++	 * Este atributo indica el tipo de la pieza que se come. Si no se ha
++	 * producido una captura contiene un 0.
++	 */
++	private Type tipoPiezaComida;
++
++	/**
++	 * Este atributo guarda la representacion del movimiento en notacion
++	 * algebraica.
++	 */
++	private String notacion;
++
++	public Square getCasillaDestino() {
++		return casillaDestino;
++	}
++
++	public void setCasillaDestino(Square casillaDestino) {
++		this.casillaDestino = casillaDestino;
++	}
++
++	public Square getCasillaOrigen() {
++		return casillaOrigen;
++	}
++
++	public void setCasillaOrigen(Square casillaOrigen) {
++		this.casillaOrigen = casillaOrigen;
++	}
++
++	public Side getBando() {
++		return bando;
++	}
++
++	public void setBando(Side bando) {
++		this.bando = bando;
++	}
++
++	public int getNumeroMovimiento() {
++		return numeroMovimiento;
++	}
++
++	public void setNumeroMovimiento(int numeroMovimiento) {
++		this.numeroMovimiento = numeroMovimiento;
++	}
++
++	public Type getTipoPieza() {
++		return tipoPieza;
++	}
++
++	public void setTipoPieza(Type tipoPieza) {
++		this.tipoPieza = tipoPieza;
++	}
++
++	public Square getCasillaComer() {
++		return casillaComer;
++	}
++
++	public void setCasillaComer(Square casillaComer) {
++		this.casillaComer = casillaComer;
++	}
++
++	public int getContadorTablas() {
++		return contadorTablas;
++	}
++
++	public void setContadorTablas(int contadorTablas) {
++		this.contadorTablas = contadorTablas;
++	}
++
++	public Type getCoronacion() {
++		return coronacion;
++	}
++
++	public void setCoronacion(Type coronacion) {
++		this.coronacion = coronacion;
++	}
++
++	public boolean[][] getEnroque() {
++		return enroque;
++	}
++
++	public void setEnroque(boolean[][] enroque) {
++		this.enroque = enroque;
++	}
++
++	public Result getFinPartida() {
++		return finPartida;
++	}
++
++	public void setFinPartida(Result finPartida) {
++		this.finPartida = finPartida;
++	}
++
++	public boolean isJaque() {
++		return jaque;
++	}
++
++	public void setJaque(boolean jaque) {
++		this.jaque = jaque;
++	}
++
++	public char getAlPaso() {
++		return alPaso;
++	}
++
++	public void setAlPaso(char alPaso) {
++		this.alPaso = alPaso;
++	}
++
++	public String getNotacion() {
++		return notacion;
++	}
++
++	public void setNotacion(String notacion) {
++		this.notacion = notacion;
++	}
++
++	public Type getTipoPiezaComida() {
++		return tipoPiezaComida;
++	}
++
++	public void setTipoPiezaComida(Type tipoPiezaComida) {
++		this.tipoPiezaComida = tipoPiezaComida;
++	}
++}
+\ No newline at end of file
+
+Deleted: trunk/MihailChessLib/com/mihail/chess/Movement.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Movement.java	2005-08-14 13:44:19 UTC (rev 39)
++++ trunk/MihailChessLib/com/mihail/chess/Movement.java	2005-08-18 10:52:36 UTC (rev 40)
+@@ -1,241 +0,0 @@
+-package com.mihail.chess;
+-
+-import static com.mihail.chess.Board.Side;
+-
+-import com.mihail.chess.Board.Result;
+-import com.mihail.chess.Piece.Type;
+-
+-/**
+- * Esta clase define un objeto Movimiento, que guarda informacion sobre el
+- * movimiento que se realiza y sobre el estado de la partida en ese momento (qu&#233;
+- * enroques son posibles, es jaque, etc).
+- * 
+- * @author Pedro Suarez Casal
+- * @author Iago Porto Diaz
+- */
+-
+-public final class Movement {
+-
+-	/**
+-	 * Este atributo indica la letra de la casilla origen.
+-	 */
+-	// public char origenLetra;
+-	/**
+-	 * Este atributo indica el numero de la casilla origen.
+-	 */
+-	// public char origenNum;
+-	private Square casillaOrigen;
+-
+-	/**
+-	 * Este atributo indica la letra de la casilla destino.
+-	 */
+-	// public char destinoLetra;
+-	/**
+-	 * Este atributo indica el numero de la casilla destino.
+-	 */
+-	// public char destinoNum;
+-	private Square casillaDestino;
+-
+-	/**
+-	 * Numero de movimiento en la partida. Es el mismo numero para blancas que
+-	 * para negras. Por ejemplo: en '1. e4 c5', tanto e4 como c5 compartirian el
+-	 * 1 como numero de movimiento.
+-	 */
+-	private int numeroMovimiento;
+-
+-	/**
+-	 * Bando que mueve.
+-	 */
+-	private Side bando;
+-
+-	/**
+-	 * Este atributo indica el tipo de pieza que es: {P,C,A,T,D,R}
+-	 * 
+-	 */
+-	private Type tipoPieza;
+-
+-	/**
+-	 * Este atributo indica la letra de la casilla donde se come. Si no se ha
+-	 * producido una captura contiene un 0.
+-	 */
+-	// public char casillaComerLetra;
+-	/**
+-	 * Este atributo indica el numero de la casilla donde se come. Si no se ha
+-	 * producido una captura contiene un 0.
+-	 */
+-	// public char casillaComerNum;
+-	private Square casillaComer;
+-
+-	/**
+-	 * Este atributo indica si el movimiento produce un jaque.
+-	 */
+-	private boolean jaque;
+-
+-	/**
+-	 * Este atributo indica si el movimiento termina la partida y quien es el
+-	 * ganador o bien tablas. &lt;BR&gt;
+-	 * 'B' -&gt; Ganan blancas &lt;BR&gt;
+-	 * 'N' -&gt; Ganan negras &lt;BR&gt;
+-	 * 'T' -&gt; Tablas &lt;BR&gt;
+-	 * 0 -&gt; No ha terminado la partida
+-	 */
+-	private Result finPartida;
+-
+-	/**
+-	 * Este atributo indica si se ha producido una coronacion y a que pieza se
+-	 * promociona. &lt;BR&gt;
+-	 * 'C' -&gt; Caballo &lt;BR&gt;
+-	 * 'A' -&gt; Alfil &lt;BR&gt;
+-	 * 'T' -&gt; Torre &lt;BR&gt;
+-	 * 'D' -&gt; Dama &lt;BR&gt;
+-	 * 0 -&gt; No hay coronacion
+-	 */
+-	private Type coronacion;
+-
+-	/**
+-	 * Este atributo indica el valor de contadorTablas en el momento que se
+-	 * produce el movimiento.
+-	 */
+-	private int contadorTablas;
+-
+-	/**
+-	 * Este atributo indica que enroques estan disponibles para que bandos en el
+-	 * momento en que se produce el movimiento. Es un array 2x2, en donde: &lt;BR&gt;
+-	 * enroque[0][0] -&gt; Blancas, enroque corto &lt;BR&gt;
+-	 * enroque[0][1] -&gt; Blancas, enroque largo &lt;BR&gt;
+-	 * enroque[1][0] -&gt; Negras, enroque corto &lt;BR&gt;
+-	 * enroque[1][1] -&gt; Negras, enroque largo &lt;BR&gt;
+-	 */
+-	private boolean[][] enroque;
+-
+-	/**
+-	 * Este atributo contiene 0 en todos los casos salvo si se ha movido un peon
+-	 * dos casillas. En ese caso contendra la letra de la columna del peon. Es
+-	 * necesario para la captura al paso.
+-	 */
+-	private char alPaso;
+-
+-	/**
+-	 * Este atributo indica el tipo de la pieza que se come. Si no se ha
+-	 * producido una captura contiene un 0.
+-	 */
+-	private Type tipoPiezaComida;
+-
+-	/**
+-	 * Este atributo guarda la representacion del movimiento en notacion
+-	 * algebraica.
+-	 */
+-	private String notacion;
+-
+-	public Square getCasillaDestino() {
+-		return casillaDestino;
+-	}
+-
+-	public void setCasillaDestino(Square casillaDestino) {
+-		this.casillaDestino = casillaDestino;
+-	}
+-
+-	public Square getCasillaOrigen() {
+-		return casillaOrigen;
+-	}
+-
+-	public void setCasillaOrigen(Square casillaOrigen) {
+-		this.casillaOrigen = casillaOrigen;
+-	}
+-
+-	public Side getBando() {
+-		return bando;
+-	}
+-
+-	public void setBando(Side bando) {
+-		this.bando = bando;
+-	}
+-
+-	public int getNumeroMovimiento() {
+-		return numeroMovimiento;
+-	}
+-
+-	public void setNumeroMovimiento(int numeroMovimiento) {
+-		this.numeroMovimiento = numeroMovimiento;
+-	}
+-
+-	public Type getTipoPieza() {
+-		return tipoPieza;
+-	}
+-
+-	public void setTipoPieza(Type tipoPieza) {
+-		this.tipoPieza = tipoPieza;
+-	}
+-
+-	public Square getCasillaComer() {
+-		return casillaComer;
+-	}
+-
+-	public void setCasillaComer(Square casillaComer) {
+-		this.casillaComer = casillaComer;
+-	}
+-
+-	public int getContadorTablas() {
+-		return contadorTablas;
+-	}
+-
+-	public void setContadorTablas(int contadorTablas) {
+-		this.contadorTablas = contadorTablas;
+-	}
+-
+-	public Type getCoronacion() {
+-		return coronacion;
+-	}
+-
+-	public void setCoronacion(Type coronacion) {
+-		this.coronacion = coronacion;
+-	}
+-
+-	public boolean[][] getEnroque() {
+-		return enroque;
+-	}
+-
+-	public void setEnroque(boolean[][] enroque) {
+-		this.enroque = enroque;
+-	}
+-
+-	public Result getFinPartida() {
+-		return finPartida;
+-	}
+-
+-	public void setFinPartida(Result finPartida) {
+-		this.finPartida = finPartida;
+-	}
+-
+-	public boolean isJaque() {
+-		return jaque;
+-	}
+-
+-	public void setJaque(boolean jaque) {
+-		this.jaque = jaque;
+-	}
+-
+-	public char getAlPaso() {
+-		return alPaso;
+-	}
+-
+-	public void setAlPaso(char alPaso) {
+-		this.alPaso = alPaso;
+-	}
+-
+-	public String getNotacion() {
+-		return notacion;
+-	}
+-
+-	public void setNotacion(String notacion) {
+-		this.notacion = notacion;
+-	}
+-
+-	public Type getTipoPiezaComida() {
+-		return tipoPiezaComida;
+-	}
+-
+-	public void setTipoPiezaComida(Type tipoPiezaComida) {
+-		this.tipoPiezaComida = tipoPiezaComida;
+-	}
+-}
+\ No newline at end of file
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Position.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Position.java	2005-08-14 13:44:19 UTC (rev 39)
++++ trunk/MihailChessLib/com/mihail/chess/Position.java	2005-08-18 10:52:36 UTC (rev 40)
+@@ -763,7 +763,7 @@
+ 	 * @todo Resolver ambiguedades, coronaciones, jaques, mates...
+ 	 * @todo Esto no esta bien aqui, es mejor dejarlo en Logica....
+ 	 */
+-	private String generarNotacionALG (Movement mov) {
++	private String generarNotacionALG (Move mov) {
+ 		StringBuffer temp = new StringBuffer ();
+ 
+ 		if (mov.getTipoPieza() == Type.KING) {
+
+Modified: trunk/MihailChessLib/com/mihail/chess/VariationsTree.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/VariationsTree.java	2005-08-14 13:44:19 UTC (rev 39)
++++ trunk/MihailChessLib/com/mihail/chess/VariationsTree.java	2005-08-18 10:52:36 UTC (rev 40)
+@@ -14,11 +14,11 @@
+  */
+ public class VariationsTree {
+ 	private class NodoArbol {
+-		public Movement movimiento;
++		public Move movimiento;
+ 
+ 		public ArrayList&lt;VariationsTree&gt; variantes;
+ 
+-		public NodoArbol(Movement mov) {
++		public NodoArbol(Move mov) {
+ 			movimiento = mov;
+ 		}
+ 	}
+@@ -50,7 +50,7 @@
+ 	 * @param mov
+ 	 *            Movimiento que se a&#241;ade.
+ 	 */
+-	public void appendMovimiento(Movement mov) {
++	public void appendMovimiento(Move mov) {
+ 		arbol.add(new NodoArbol(mov));
+ 	}
+ 
+@@ -64,14 +64,14 @@
+ 	 *            Numero del movimiento
+ 	 * @return Devuelve el movimiento correspondiente a color y numero
+ 	 */
+-	public Movement getMove(Side color, int numero) {
++	public Move getMove(Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 		if (n != null)
+ 			return n.movimiento;
+ 		return null;
+ 	}
+ 	
+-	public Movement getMove(int halfPly) {
++	public Move getMove(int halfPly) {
+ 		return arbol.get(halfPly).movimiento;
+ 	}
+ 
+@@ -136,7 +136,7 @@
+ 	 * @param numero
+ 	 *            Numero del movimiento.
+ 	 */
+-	public void addVariation(Movement mov, Side color, int numero) {
++	public void addVariation(Move mov, Side color, int numero) {
+ 		NodoArbol n = getNodo(color, numero);
+ 
+ 		if (n.variantes == null)
+@@ -144,7 +144,7 @@
+ 
+ 		VariationsTree a = new VariationsTree(numero);
+ 		if (color == Side.BLACK) // Cada arbol de variantes debe empezar con un movimiento de blancas
+-			a.appendMovimiento(new Movement());
++			a.appendMovimiento(new Move());
+ 		a.appendMovimiento(mov);
+ 
+ 		n.variantes.add(a);
+@@ -192,7 +192,7 @@
+ 	 * @return
+ 	 */
+ 
+-	public Movement getLastMove() {
++	public Move getLastMove() {
+ 		return arbol.get(arbol.size() - 1).movimiento;
+ 	}
+ 	
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000008.html">[Mihailchess-svn] r39 - trunk/MihailChessLib/com/mihail/openings
+</A></li>
+	<LI>Next message: <A HREF="000013.html">[Mihailchess-svn] r41 - trunk/MihailChessLib/com/mihail/pgn
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12">[ date ]</a>
+              <a href="thread.html#12">[ thread ]</a>
+              <a href="subject.html#12">[ subject ]</a>
+              <a href="author.html#12">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

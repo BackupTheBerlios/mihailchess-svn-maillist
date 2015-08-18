@@ -1,0 +1,230 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r37 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r37%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508141338.j7EDcrA3003839%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000011.html">
+   <LINK REL="Next"  HREF="000007.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r37 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r37%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508141338.j7EDcrA3003839%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r37 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Sun Aug 14 15:38:53 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000011.html">[Mihailchess-svn] r36 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+        <LI>Next message: <A HREF="000007.html">[Mihailchess-svn] r38 - in trunk/MihailChessLib/com/mihail: clock openings test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6">[ date ]</a>
+              <a href="thread.html#6">[ thread ]</a>
+              <a href="subject.html#6">[ subject ]</a>
+              <a href="author.html#6">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-14 15:38:53 +0200 (Sun, 14 Aug 2005)
+New Revision: 37
+
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/Board.java
+   trunk/MihailChessLib/com/mihail/chess/Board2D.java
+   trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+   trunk/MihailChessLib/com/mihail/chess/PositionsDictionary.java
+Log:
+More translations
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-14 13:30:00 UTC (rev 36)
++++ trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-14 13:38:53 UTC (rev 37)
+@@ -63,7 +63,7 @@
+ 	public Board(Position posInicial) {
+ 		movimientos = new VariationsTree();
+ 		posicion = posInicial;
+-		hash.insertar(posicion.getPositionKey());
++		hash.insert(posicion.getPositionKey());
+ 	}
+ 
+ 	/**
+@@ -561,7 +561,7 @@
+ 					// Si se come ponemos el contador a 0
+ 					if (!posicion.isEmpty(destinoLetra, destinoNum)) {
+ 						posicion.setHalfmoveClock(0);
+-						hash.borrarTabla();
++						hash.clearDictionary();
+ 						mov.setCasillaComer(new Square(destinoLetra,
+ 								destinoNum));
+ 						mov.setTipoPiezaComida(posicion.getPieza(destinoLetra,
+@@ -599,7 +599,7 @@
+ 							mov.setCoronacion(coronar);
+ 						}
+ 						posicion.setHalfmoveClock(0);
+-						hash.borrarTabla();
++						hash.clearDictionary();
+ 					}
+ 					// Se hacen los calculos especiales si se trata de un rey
+ 					if (piezaQueMueve.getType() == Type.KING) {
+@@ -641,7 +641,7 @@
+ 					}
+ 					mov.setFinPartida(esFinPartida());
+ 
+-					hash.insertar(posicion.getPositionKey());
++					hash.insert(posicion.getPositionKey());
+ 					movimientos.appendMovimiento(mov);
+ 					indice++;
+ 					return mov;
+@@ -788,7 +788,7 @@
+ 			devolver = Result.FIFTY_MOV_DRAW;
+ 		}
+ 		// Tablas por repeticion de posiciones
+-		if (hash.getRepeticiones(posicion.getPositionKey()) == 3) {
++		if (hash.getRepetitions(posicion.getPositionKey()) == 3) {
+ 			fin = true;
+ 			devolver = Result.REPETITION_DRAW;
+ 		}
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board2D.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board2D.java	2005-08-14 13:30:00 UTC (rev 36)
++++ trunk/MihailChessLib/com/mihail/chess/Board2D.java	2005-08-14 13:38:53 UTC (rev 37)
+@@ -153,11 +153,11 @@
+ 		// g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+ 		// RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+ 
+-		if(theme.getBackground()==null) {
++		if(theme.getBackgroundImage()==null) {
+ 			g.setColor(Color.LIGHT_GRAY);
+ 			g.fillRect(0, 0, getWidth(), getHeight());
+ 		} else {
+-			g.drawImage(theme.getBackground(), 0, 0, this.getWidth(), this.getHeight(), null);
++			g.drawImage(theme.getBackgroundImage(), 0, 0, this.getWidth(), this.getHeight(), null);
+ 		}
+ 
+ 		if (getWidth() &lt; getHeight()) {
+@@ -182,7 +182,7 @@
+ 				// casillas blancas o negras
+ 				// if (activado) {
+ 				int v = (i + j) % 2;
+-				Image textura = theme.getImageCasilla(v == 0 ? Side.WHITE
++				Image textura = theme.getSquareImage(v == 0 ? Side.WHITE
+ 						: Side.BLACK);
+ 				if (textura != null)
+ 
+@@ -461,7 +461,7 @@
+ 	}
+ 
+ 	private void dibujarBorde(Graphics g) {
+-		Image borde = theme.getMarco();
++		Image borde = theme.getBorderImage();
+ 		if (borde != null) {
+ 			g.drawImage(borde, 0, 0, null);
+ 		} else { // Dibujamos a mano
+@@ -553,7 +553,7 @@
+ 		MediaTracker media = new MediaTracker(this);
+ 		for (int i = 0; i &lt; 2; i++) {
+ 			for (int j = 0; j &lt; 6; j++) {
+-				piezas[i][j] = theme.getImagePiece(i==0?Side.WHITE:Side.BLACK, intToTipo(j))
++				piezas[i][j] = theme.getPieceImage(i==0?Side.WHITE:Side.BLACK, intToTipo(j))
+ 						.getScaledInstance(TAM, TAM, Image.SCALE_FAST);
+ 				media.addImage(piezas[i][j], 1);
+ 			}
+
+Modified: trunk/MihailChessLib/com/mihail/chess/BoardTheme.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-14 13:30:00 UTC (rev 36)
++++ trunk/MihailChessLib/com/mihail/chess/BoardTheme.java	2005-08-14 13:38:53 UTC (rev 37)
+@@ -94,19 +94,19 @@
+ 		}
+ 	}
+ 	
+-	public Image getImagePiece(Side bando, Type tipo) {
++	public Image getPieceImage(Side bando, Type tipo) {
+ 		return pieceImages[bandoToInt(bando)][tipoToInt(tipo)];
+ 	}
+ 	
+-	public Image getImageCasilla(Side bando) {
++	public Image getSquareImage(Side bando) {
+ 		return casillasImages[bandoToInt(bando)];
+ 	}
+ 	
+-	public Image getMarco() {
++	public Image getBorderImage() {
+ 		return marco;
+ 	}
+ 	
+-	public Image getBackground() {
++	public Image getBackgroundImage() {
+ 		return background;
+ 	}
+ 	
+
+Modified: trunk/MihailChessLib/com/mihail/chess/PositionsDictionary.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/PositionsDictionary.java	2005-08-14 13:30:00 UTC (rev 36)
++++ trunk/MihailChessLib/com/mihail/chess/PositionsDictionary.java	2005-08-14 13:38:53 UTC (rev 37)
+@@ -37,7 +37,7 @@
+ 	 * @param clave
+ 	 *            Clave que queremos insertar dentro de la tabla
+ 	 */
+-	public void insertar(int clave) {
++	public void insert(int clave) {
+ 		int pos = clave % tam;
+ 		int i = 0;
+ 
+@@ -55,7 +55,7 @@
+ 	/**
+ 	 * Borra todos los elementos de la tabla.
+ 	 */
+-	public void borrarTabla() {
++	public void clearDictionary() {
+ 		for (int i = 0; i &lt; tabla.length; i++)
+ 			tabla[i].clear();
+ 	}
+@@ -67,7 +67,7 @@
+ 	 *            La clave asociada con una posicion.
+ 	 * @return El numero de repeticiones de la clave recibida.
+ 	 */
+-	public int getRepeticiones(int clave) {
++	public int getRepetitions(int clave) {
+ 		int pos = clave % tam;
+ 		int i = 0;
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000011.html">[Mihailchess-svn] r36 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+	<LI>Next message: <A HREF="000007.html">[Mihailchess-svn] r38 - in trunk/MihailChessLib/com/mihail: clock openings test
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6">[ date ]</a>
+              <a href="thread.html#6">[ thread ]</a>
+              <a href="subject.html#6">[ subject ]</a>
+              <a href="author.html#6">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

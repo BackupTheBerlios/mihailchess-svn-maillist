@@ -1,0 +1,403 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r38 - in trunk/MihailChessLib/com/mihail: clock openings test
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r38%20-%20in%20trunk/MihailChessLib/com/mihail%3A%20clock%20openings%20test&In-Reply-To=%3C200508141342.j7EDgdZu004077%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000006.html">
+   <LINK REL="Next"  HREF="000008.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r38 - in trunk/MihailChessLib/com/mihail: clock openings test</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r38%20-%20in%20trunk/MihailChessLib/com/mihail%3A%20clock%20openings%20test&In-Reply-To=%3C200508141342.j7EDgdZu004077%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r38 - in trunk/MihailChessLib/com/mihail: clock openings test">gauleng at berlios.de
+       </A><BR>
+    <I>Sun Aug 14 15:42:39 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000006.html">[Mihailchess-svn] r37 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+        <LI>Next message: <A HREF="000008.html">[Mihailchess-svn] r39 - trunk/MihailChessLib/com/mihail/openings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7">[ date ]</a>
+              <a href="thread.html#7">[ thread ]</a>
+              <a href="subject.html#7">[ subject ]</a>
+              <a href="author.html#7">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-14 15:42:39 +0200 (Sun, 14 Aug 2005)
+New Revision: 38
+
+Modified:
+   trunk/MihailChessLib/com/mihail/clock/Clock.java
+   trunk/MihailChessLib/com/mihail/openings/Openings.java
+   trunk/MihailChessLib/com/mihail/test/PositionTest.java
+   trunk/MihailChessLib/com/mihail/test/RelojTest.java
+Log:
+More translations
+
+Modified: trunk/MihailChessLib/com/mihail/clock/Clock.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/clock/Clock.java	2005-08-14 13:38:53 UTC (rev 37)
++++ trunk/MihailChessLib/com/mihail/clock/Clock.java	2005-08-14 13:42:39 UTC (rev 38)
+@@ -74,7 +74,7 @@
+ 			throw new ClockException(&quot;Recarga fuera de rango&quot;);
+ 	}
+ 
+-	public void comenzar() {
++	public void start() {
+ 		if (tiempo == null) {
+ 			tiempo = new Timer();
+ 		}
+@@ -120,11 +120,11 @@
+ 		}
+ 	}
+ 
+-	public void setParado(boolean b) {
++	public void setStopped(boolean b) {
+ 		parado = b;
+ 	}
+ 
+-	public void setTiempo(int h, int m, int s, int d) throws ClockException {
++	public void setTime(int h, int m, int s, int d) throws ClockException {
+ 		horas = h;
+ 		if (h &lt; 0)
+ 			throw new ClockException(&quot;Horas fuera de rango&quot;);
+@@ -139,7 +139,7 @@
+ 		decimas = d;
+ 	}
+ 
+-	public void recargar() {
++	public void recharge() {
+ 		int simul, resto;
+ 		simul = segundos + recarga;
+ 		horas += simul / 3600;
+@@ -148,27 +148,27 @@
+ 		segundos = resto % 60;
+ 	}
+ 
+-	public boolean isFinTiempo() {
++	public boolean isTimeFinished() {
+ 		return horas &lt; 0;
+ 	}
+ 
+-	public void setRecarga(int segs) {
++	public void setRecharge(int segs) {
+ 		recarga = segs;
+ 	}
+ 
+-	public int getHoras() {
++	public int getHours() {
+ 		return horas;
+ 	}
+ 
+-	public int getMinutos() {
++	public int getMinutes() {
+ 		return minutos;
+ 	}
+ 
+-	public int getSegundos() {
++	public int getSeconds() {
+ 		return segundos;
+ 	}
+ 
+-	public int getDecimas() {
++	public int getTenths() {
+ 		return decimas;
+ 	}
+ }
+
+Modified: trunk/MihailChessLib/com/mihail/openings/Openings.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/openings/Openings.java	2005-08-14 13:38:53 UTC (rev 37)
++++ trunk/MihailChessLib/com/mihail/openings/Openings.java	2005-08-14 13:42:39 UTC (rev 38)
+@@ -32,7 +32,7 @@
+ 	 * @return Nombre de la apertura que se esta jugando en la Posicion pos.
+ 	 */
+ 	public String getApertura(Position pos) {
+-		int clave = pos.getClavePosicion();
++		int clave = pos.getPositionKey();
+ 		if (aperturas.containsKey(clave))
+ 			return aperturas.get(clave);
+ 		else
+
+Modified: trunk/MihailChessLib/com/mihail/test/PositionTest.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/test/PositionTest.java	2005-08-14 13:38:53 UTC (rev 37)
++++ trunk/MihailChessLib/com/mihail/test/PositionTest.java	2005-08-14 13:42:39 UTC (rev 38)
+@@ -13,8 +13,8 @@
+ import com.mihail.chess.Position;
+ import junit.framework.TestCase;
+ 
+-import static com.mihail.chess.Board.Bando;
+-import static com.mihail.chess.Piece.Tipo;
++import static com.mihail.chess.Board.Side;
++import static com.mihail.chess.Piece.Type;
+ 
+ public class PositionTest extends TestCase {
+ 
+@@ -31,7 +31,7 @@
+ 	 */
+ 	public void testGetFEN() {
+ 		Position p = new Position();
+-		p.setPosicion(Position.CAD_INICIAL);
++		p.setFEN(Position.INITIAL_POSITION_FEN);
+ 		assertEquals(
+ 				&quot;rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1&quot;, p
+ 						.getFEN());
+@@ -46,10 +46,10 @@
+ 	 */
+ 	public void testSetTurno() {
+ 		Position p = new Position();
+-		Bando turno = p.getTurno();
+-		p.setTurno();
+-		p.setTurno();
+-		assertEquals(turno, p.getTurno());
++		Side turno = p.getTurn();
++		p.setTurn();
++		p.setTurn();
++		assertEquals(turno, p.getTurn());
+ 	}
+ 
+ 	/*
+@@ -57,10 +57,10 @@
+ 	 */
+ 	public void testSetTurnoInt() {
+ 		Position p = new Position();
+-		p.setTurno(Bando.BLANCO);
+-		assertEquals(Bando.BLANCO, p.getTurno());
+-		p.setTurno(Bando.NEGRO);
+-		assertEquals(Bando.NEGRO, p.getTurno());
++		p.setTurn(Side.WHITE);
++		assertEquals(Side.WHITE, p.getTurn());
++		p.setTurn(Side.BLACK);
++		assertEquals(Side.BLACK, p.getTurn());
+ 	}
+ 
+ 	/*
+@@ -68,19 +68,19 @@
+ 	 */
+ 	public void testSetEnroqueCorto() {
+ 		Position p = new Position();
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.REY), 'e', '1');
+-		p.setEnroqueCorto(Bando.BLANCO, true);
+-		assertFalse(p.getEnroqueCorto(Bando.BLANCO));
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.TORRE), 'h', '1');
+-		p.setEnroqueCorto(Bando.BLANCO, true);
+-		assertTrue(p.getEnroqueCorto(Bando.BLANCO));
++		p.setPiece(new Piece(Side.WHITE, Type.KING), 'e', '1');
++		p.setKingsideCastling(Side.WHITE, true);
++		assertFalse(p.getKingsideCastling(Side.WHITE));
++		p.setPiece(new Piece(Side.WHITE, Type.ROOK), 'h', '1');
++		p.setKingsideCastling(Side.WHITE, true);
++		assertTrue(p.getKingsideCastling(Side.WHITE));
+ 
+-		p.setPieza(new Piece(Bando.NEGRO, Tipo.REY), 'e', '8');
+-		p.setEnroqueCorto(Bando.NEGRO, true);
+-		assertFalse(p.getEnroqueCorto(Bando.NEGRO));
+-		p.setPieza(new Piece(Bando.NEGRO, Tipo.TORRE), 'h', '8');
+-		p.setEnroqueCorto(Bando.NEGRO, true);
+-		assertTrue(p.getEnroqueCorto(Bando.NEGRO));
++		p.setPiece(new Piece(Side.BLACK, Type.KING), 'e', '8');
++		p.setKingsideCastling(Side.BLACK, true);
++		assertFalse(p.getKingsideCastling(Side.BLACK));
++		p.setPiece(new Piece(Side.BLACK, Type.ROOK), 'h', '8');
++		p.setKingsideCastling(Side.BLACK, true);
++		assertTrue(p.getKingsideCastling(Side.BLACK));
+ 	}
+ 
+ 	/*
+@@ -88,19 +88,19 @@
+ 	 */
+ 	public void testSetEnroqueLargo() {
+ 		Position p = new Position();
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.REY), 'e', '1');
+-		p.setEnroqueLargo(Bando.BLANCO, true);
+-		assertEquals(false, p.getEnroqueLargo(Bando.BLANCO));
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.TORRE), 'a', '1');
+-		p.setEnroqueLargo(Bando.BLANCO, true);
+-		assertTrue(p.getEnroqueLargo(Bando.BLANCO));
++		p.setPiece(new Piece(Side.WHITE, Type.KING), 'e', '1');
++		p.setQueensideCastling(Side.WHITE, true);
++		assertEquals(false, p.getQueensideCastling(Side.WHITE));
++		p.setPiece(new Piece(Side.WHITE, Type.ROOK), 'a', '1');
++		p.setQueensideCastling(Side.WHITE, true);
++		assertTrue(p.getQueensideCastling(Side.WHITE));
+ 
+-		p.setPieza(new Piece(Bando.NEGRO, Tipo.REY), 'e', '8');
+-		p.setEnroqueLargo(Bando.NEGRO, true);
+-		assertFalse(p.getEnroqueLargo(Bando.NEGRO));
+-		p.setPieza(new Piece(Bando.NEGRO, Tipo.TORRE), 'a', '8');
+-		p.setEnroqueLargo(Bando.NEGRO, true);
+-		assertTrue(p.getEnroqueLargo(Bando.NEGRO));
++		p.setPiece(new Piece(Side.BLACK, Type.KING), 'e', '8');
++		p.setQueensideCastling(Side.BLACK, true);
++		assertFalse(p.getQueensideCastling(Side.BLACK));
++		p.setPiece(new Piece(Side.BLACK, Type.ROOK), 'a', '8');
++		p.setQueensideCastling(Side.BLACK, true);
++		assertTrue(p.getQueensideCastling(Side.BLACK));
+ 	}
+ 
+ 	/*
+@@ -117,29 +117,29 @@
+ 		Position p = new Position(&quot;8/8/8/7p/8/8/8/8 w - h 0 1&quot;);
+ 		// Al borrar la pieza, alPaso deberia resetearse, ya que no hay peon en
+ 		// esa columna
+-		p.borrarPieza('h', '5');
+-		assertEquals(p.getAlPaso(), 0);
++		p.removePiece('h', '5');
++		assertEquals(p.getEnPassant(), 0);
+ 		assertNull(p.getPieza('h', '5'));
+ 
+-		p.setPosicion(&quot;8/8/8/8/8/8/8/R3K2R w KQ - 0 1&quot;);
+-		p.borrarPieza('e', '1');
+-		assertFalse(p.getEnroqueLargo(Bando.BLANCO));
+-		assertFalse(p.getEnroqueCorto(Bando.BLANCO));
++		p.setFEN(&quot;8/8/8/8/8/8/8/R3K2R w KQ - 0 1&quot;);
++		p.removePiece('e', '1');
++		assertFalse(p.getQueensideCastling(Side.WHITE));
++		assertFalse(p.getKingsideCastling(Side.WHITE));
+ 
+-		p.setPosicion(&quot;8/8/8/8/8/8/8/R3K2R w KQ - 0 1&quot;);
+-		p.borrarPieza('h', '1');
+-		assertTrue(p.getEnroqueLargo(Bando.BLANCO));
+-		assertFalse(p.getEnroqueCorto(Bando.BLANCO));
++		p.setFEN(&quot;8/8/8/8/8/8/8/R3K2R w KQ - 0 1&quot;);
++		p.removePiece('h', '1');
++		assertTrue(p.getQueensideCastling(Side.WHITE));
++		assertFalse(p.getKingsideCastling(Side.WHITE));
+ 
+-		p.setPosicion(&quot;r3k2r/8/8/8/8/8/8/8 w kq - 0 1&quot;);
+-		p.borrarPieza('e', '8');
+-		assertFalse(p.getEnroqueLargo(Bando.NEGRO));
+-		assertFalse(p.getEnroqueCorto(Bando.NEGRO));
++		p.setFEN(&quot;r3k2r/8/8/8/8/8/8/8 w kq - 0 1&quot;);
++		p.removePiece('e', '8');
++		assertFalse(p.getQueensideCastling(Side.BLACK));
++		assertFalse(p.getKingsideCastling(Side.BLACK));
+ 
+-		p.setPosicion(&quot;r3k2r/8/8/8/8/8/8/8 w kq - 0 1&quot;);
+-		p.borrarPieza('a', '8');
+-		assertFalse(p.getEnroqueLargo(Bando.NEGRO));
+-		assertTrue(p.getEnroqueCorto(Bando.NEGRO));
++		p.setFEN(&quot;r3k2r/8/8/8/8/8/8/8 w kq - 0 1&quot;);
++		p.removePiece('a', '8');
++		assertFalse(p.getQueensideCastling(Side.BLACK));
++		assertTrue(p.getKingsideCastling(Side.BLACK));
+ 	}
+ 
+ 	/*
+@@ -154,11 +154,11 @@
+ 	 */
+ 	public void testGetClavePosicion() {
+ 		Position p = new Position();
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.CABALLO), 'd', '4');
+-		int clave = p.getClavePosicion();
+-		p.borrarPieza('d', '4');
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.CABALLO), 'd', '4');
+-		assertEquals(clave, p.getClavePosicion());
++		p.setPiece(new Piece(Side.WHITE, Type.KNIGHT), 'd', '4');
++		int clave = p.getPositionKey();
++		p.removePiece('d', '4');
++		p.setPiece(new Piece(Side.WHITE, Type.KNIGHT), 'd', '4');
++		assertEquals(clave, p.getPositionKey());
+ 	}
+ 
+ 	/*
+@@ -167,19 +167,19 @@
+ 	public void testSetAlPaso() {
+ 		Position p = new Position();
+ 		// Comprobamos que no se pone siempre alPaso
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.PEON), 'a', '1');
+-		p.setAlPaso('a');
+-		assertEquals(p.getAlPaso(), 0);
++		p.setPiece(new Piece(Side.WHITE, Type.PAWN), 'a', '1');
++		p.setEnPassant('a');
++		assertEquals(p.getEnPassant(), 0);
+ 		// Comprobamos que al poner un peon negro en una casilla de alPaso, la
+ 		// funcion deja
+-		p.setPieza(new Piece(Bando.NEGRO, Tipo.PEON), 'h', '5');
+-		p.setAlPaso('h');
+-		assertEquals(p.getAlPaso(), 'h');
++		p.setPiece(new Piece(Side.BLACK, Type.PAWN), 'h', '5');
++		p.setEnPassant('h');
++		assertEquals(p.getEnPassant(), 'h');
+ 		// Probamos lo mismo pero con un peon blanco
+-		p.setPieza(new Piece(Bando.BLANCO, Tipo.PEON), 'h', '4');
+-		p.setTurno(Bando.NEGRO);
+-		p.setAlPaso('h');
+-		assertEquals(p.getAlPaso(), 'h');
++		p.setPiece(new Piece(Side.WHITE, Type.PAWN), 'h', '4');
++		p.setTurn(Side.BLACK);
++		p.setEnPassant('h');
++		assertEquals(p.getEnPassant(), 'h');
+ 	}
+ 
+ 	/*
+
+Modified: trunk/MihailChessLib/com/mihail/test/RelojTest.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/test/RelojTest.java	2005-08-14 13:38:53 UTC (rev 37)
++++ trunk/MihailChessLib/com/mihail/test/RelojTest.java	2005-08-14 13:42:39 UTC (rev 38)
+@@ -11,11 +11,11 @@
+ 	public void update(Observable arg0, Object arg1) {
+ 		if (arg0 instanceof Clock) {
+ 			Clock r = (Clock) arg0;
+-			if (r.getDecimas() == 0) {
+-				System.out.println(r.getHoras() + &quot;:&quot; + r.getMinutos() + &quot;:&quot;
+-						+ r.getSegundos() + &quot;.&quot; + r.getDecimas());
++			if (r.getTenths() == 0) {
++				System.out.println(r.getHours() + &quot;:&quot; + r.getMinutes() + &quot;:&quot;
++						+ r.getSeconds() + &quot;.&quot; + r.getTenths());
+ 			}
+-			if (r.isFinTiempo())
++			if (r.isTimeFinished())
+ 				System.out.println(&quot;FIN TIEMPO&quot;);
+ 		}
+ 	}
+@@ -30,7 +30,7 @@
+ 		relojTest = new RelojTest();
+ 
+ 		reloj.addObserver(relojTest);
+-		reloj.comenzar();
+-		reloj.setParado(false);
++		reloj.start();
++		reloj.setStopped(false);
+ 	}
+ }
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000006.html">[Mihailchess-svn] r37 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+	<LI>Next message: <A HREF="000008.html">[Mihailchess-svn] r39 - trunk/MihailChessLib/com/mihail/openings
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7">[ date ]</a>
+              <a href="thread.html#7">[ thread ]</a>
+              <a href="subject.html#7">[ subject ]</a>
+              <a href="author.html#7">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

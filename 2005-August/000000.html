@@ -1,0 +1,375 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r28 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r28%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508100030.j7A0UJiM014506%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000001.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r28 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r28%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508100030.j7A0UJiM014506%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r28 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Wed Aug 10 02:30:19 CEST 2005</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000001.html">[Mihailchess-svn] r29 - trunk/MihailChessLib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-10 02:30:19 +0200 (Wed, 10 Aug 2005)
+New Revision: 28
+
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/Logica.java
+   trunk/MihailChessLib/com/mihail/chess/Pieza.java
+   trunk/MihailChessLib/com/mihail/chess/Posicion.java
+Log:
+Pasados los ultimos dos metodos de la logica antigua a la nueva: generarNotacionALG y moverALG
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Logica.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Logica.java	2005-08-07 23:39:10 UTC (rev 27)
++++ trunk/MihailChessLib/com/mihail/chess/Logica.java	2005-08-10 00:30:19 UTC (rev 28)
+@@ -866,8 +866,168 @@
+ 		}
+ 		return devolver;
+ 	}
+-	
++
+ 	/**
+-	 * TODO moverALG y getFEN ?
++	 * Interpreta un movimiento en notacion algebraica y lo realiza en la
++	 * Logica. NOTA: Partimos de la base de que el turno corresponde con el
++	 * movimiento que se recibe: no se puede dar el caso de que se reciba un
++	 * movimiento de negras y que el turno pertenezca a blancas o viceversa.
++	 * 
++	 * @param mov
++	 *            String que contiene el movimiento en notacion algebraica.
++	 * @todo Poner las ambig&#252;edades de la dama
++	 * @todo Puede ser que tengamos un problema: cuando una pieza esta clavada
++	 *       con el rey, no hay que marcar la posible ambiguedad. Hay que
++	 *       tenerlo en cuenta.
+ 	 */
++	public Movimiento moverALG(String mov) {
++		char origenLetra = '\0', origenNum = '\0', destinoLetra = '\0', destinoNum = '\0';
++		char tipoPieza = 'P';
++		Tipo piezaCoronacion = null;
++		int contadorOesEnroque = 0, i;
++		boolean finDestino = false;
++
++		for (i = mov.length() - 1; i &gt;= 0; i--) {
++			switch (mov.charAt(i)) {
++			case '1':
++			case '2':
++			case '3':
++			case '4':
++			case '5':
++			case '6':
++			case '7':
++			case '8':
++				if (!finDestino) {
++					destinoNum = mov.charAt(i);
++				} else {
++					origenNum = mov.charAt(i);
++				}
++				break;
++			case 'a':
++			case 'b':
++			case 'c':
++			case 'd':
++			case 'e':
++			case 'f':
++			case 'g':
++			case 'h':
++				if (!finDestino) {
++					destinoLetra = mov.charAt(i);
++				} else {
++					origenLetra = mov.charAt(i);
++				}
++				finDestino = true;
++				break;
++			case 'B':
++				if (i != 0) {
++					piezaCoronacion = Tipo.ALFIL;
++				} else {
++					tipoPieza = 'A';
++				}
++				break;
++			case 'K':
++				tipoPieza = 'R';
++				break;
++			case 'N':
++				if (i != 0) {
++					piezaCoronacion = Tipo.CABALLO;
++				} else {
++					tipoPieza = 'C';
++				}
++				break;
++			case 'Q':
++				if (i != 0) {
++					piezaCoronacion = Tipo.DAMA;
++				} else {
++					tipoPieza = 'D';
++				}
++				break;
++			case 'R':
++				if (i != 0) {
++					piezaCoronacion = Tipo.TORRE;
++				} else {
++					tipoPieza = 'T';
++				}
++				break;
++			case '0':
++			case 'o':
++			case 'O':
++				contadorOesEnroque++;
++				break;
++			case 'x':
++			case '+':
++			case '!':
++			case '?':
++			case '-':
++			case '=':
++				break;
++			default:
++				System.out.print(&quot;Caracter desconocido: &quot; + mov.charAt(i));
++				break;
++			}
++		}
++		if(piezaCoronacion!=null) {
++			// TODO hacer el mostrarDialogoCoronacion;
++			coronar = piezaCoronacion;
++		}
++		// Enroque Corto
++		if (contadorOesEnroque == 2) {
++			origenLetra = 'e';
++			destinoLetra = 'g';
++			if (posicion.getTurno() == Bando.BLANCO) {
++				origenNum = '1';
++				destinoNum = '1';
++			} else { // turno == NEGRO
++				origenNum = '8';
++				destinoNum = '8';
++			}
++		} else if (contadorOesEnroque == 3) {
++			origenLetra = 'e';
++			destinoLetra = 'c';
++			if (posicion.getTurno() == Bando.BLANCO) {
++				origenNum = '1';
++				destinoNum = '1';
++			} else { // turno == NEGRO
++				origenNum = '8';
++				destinoNum = '8';
++			}
++		} else {
++			Casilla c = new Casilla(destinoLetra, destinoNum);
++			if (origenLetra == '\0' &amp;&amp; origenNum != '\0') {
++				for (char ii = 'a'; ii &lt;= 'h'; ii++) {
++					Pieza p = posicion.getPieza(ii, origenNum);
++					if (p.canMove(c)) {
++						origenLetra = ii;
++						break;
++					}
++				}
++			} else if (origenLetra != '\0' &amp;&amp; origenNum == '\0') {
++				for (char ii = '1'; ii &lt;= '8'; ii++) {
++					Pieza p = posicion.getPieza(origenLetra, ii);
++					if (p.canMove(c)) {
++						origenNum = ii;
++						break;
++					}
++				}
++			} else {
++				for (char ii = '1'; ii &lt;= '8'; ii++) {
++					for (char jj = 'a'; jj &lt;= 'h'; jj++) {
++						Pieza p = posicion.getPieza(jj, ii);
++						if (p.canMove(c)) {
++							origenNum = ii;
++							break;
++						}
++					}
++				}
++			}
++		}
++		if (origenLetra == '\0' || origenNum == '\0' || destinoLetra == '\0'
++				|| destinoNum == '\0') {
++			System.out.println(tipoPieza + &quot; &quot; + origenLetra + &quot; &quot; + origenNum
++					+ &quot; &quot; + destinoLetra + &quot; &quot; + destinoNum);
++			return null;
++		} else {
++			return mover(origenLetra, origenNum, destinoLetra, destinoNum);
++		}
++	}
+ }
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Pieza.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Pieza.java	2005-08-07 23:39:10 UTC (rev 27)
++++ trunk/MihailChessLib/com/mihail/chess/Pieza.java	2005-08-10 00:30:19 UTC (rev 28)
+@@ -216,4 +216,8 @@
+ 	public void setCasilla(Casilla casilla) {
+ 		this.casilla = casilla;
+ 	}
++	
++	public boolean canMove(Casilla casilla) {
++		return casillasValidas.contains(casilla);
++	}
+ }
+\ No newline at end of file
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Posicion.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Posicion.java	2005-08-07 23:39:10 UTC (rev 27)
++++ trunk/MihailChessLib/com/mihail/chess/Posicion.java	2005-08-10 00:30:19 UTC (rev 28)
+@@ -3,6 +3,9 @@
+ import static com.mihail.chess.Logica.Bando;
+ import static com.mihail.chess.Pieza.Tipo;
+ 
++import com.mihail.chess.Logica.Resultado;
++import com.mihail.chess.Pieza.Tipo;
++
+ public class Posicion {
+ 
+ 	/**
+@@ -758,7 +761,98 @@
+ 	public Casilla getKingPosition(Bando color) {
+ 		return kingPosition[bandoToInt(color)];
+ 	}
++	
++	/**
++	 * Genera la notaci&#243;n algebraica de un movimiento.
++	 * 
++	 * @param mov
++	 *            Objeto movimiento del que se generara la notacion algebraica.
++	 * @return Una cadena con el movimiento expresado en notacion algebraica,
++	 *         (por ejemplo: Nf3, e6, Bd5...)
++	 * @todo Resolver ambiguedades, coronaciones, jaques, mates...
++	 * @todo Esto no esta bien aqui, es mejor dejarlo en Logica....
++	 */
++	private String generarNotacionALG (Movimiento mov) {
++		StringBuffer temp = new StringBuffer ();
+ 
++		if (mov.getTipoPieza() == Tipo.REY) {
++			if (Math.abs (mov.getCasillaOrigen().getLetra() - mov.getCasillaDestino().getLetra() ) == 2) {
++				if (mov.getCasillaDestino().getLetra() == 'g') {
++					temp.append (&quot;O-O&quot;);
++				}
++				else { // mov.destinoLetra == 'c'
++					temp.append (&quot;O-O-O&quot;);
++				}
++				return temp.toString ();
++			}
++		}
++		if (mov.getTipoPieza() != Tipo.PEON) {
++			temp.append (tipoToEnglish (mov.getTipoPieza()));
++		}
++		Pieza pieza = getPieza (mov.getCasillaDestino());
++		switch (mov.getTipoPieza()) {
++			case PEON:
++				if (mov.getCasillaComer() != null)
++					temp.append (mov.getCasillaOrigen().getLetra());
++				break;
++			case CABALLO:
++				for(VectorDireccion v: pieza.getDirecciones()) {
++					try {
++						Pieza p = getPieza(mov.getCasillaDestino().add(v));
++						if(p!=null &amp;&amp; p.getTipo() == Tipo.CABALLO &amp;&amp; p.getBando() == pieza.getBando()) {
++							if(mov.getCasillaOrigen().getLetra() != p.getCasilla().getLetra()) {
++								temp.append(mov.getCasillaOrigen().getLetra());
++								break;
++							} else {
++								temp.append (mov.getCasillaOrigen().getNumero());
++								break;
++							}
++						}
++					} catch(ArrayIndexOutOfBoundsException e) {}
++				}
++				break;
++
++			case ALFIL:
++			case TORRE:
++			case DAMA:
++				for(VectorDireccion v: pieza.getDirecciones()) {
++					try {
++						Casilla destino = mov.getCasillaDestino().add(v);
++						Pieza p;
++						while((p=getPieza(destino))==null) {
++							destino.add(v);
++						}
++						if(p!=null &amp;&amp; p.getTipo() == pieza.getTipo() &amp;&amp; p.getBando() == pieza.getBando()) {
++							if(mov.getCasillaOrigen().getLetra() != p.getCasilla().getLetra()) {
++								temp.append(mov.getCasillaOrigen().getLetra());
++								break;
++							} else {
++								temp.append (mov.getCasillaOrigen().getNumero());
++								break;
++							}
++						}
++					} catch(ArrayIndexOutOfBoundsException e) {}
++				}
++				break;
++		}
++
++		if (mov.getCasillaComer() != null)
++			temp.append (&quot;x&quot;);
++
++		temp.append (mov.getCasillaDestino().toString());
++
++		if (mov.getCoronacion() != null)
++			temp.append (&quot;=&quot; + tipoToEnglish (mov.getCoronacion()));
++
++		if (mov.isJaque())
++			if (mov.getFinPartida() == Resultado.JAQUE_MATE_BLANCO
++					|| mov.getFinPartida() == Resultado.JAQUE_MATE_NEGRO)
++				temp.append (&quot;#&quot;);
++			else
++				temp.append (&quot;+&quot;);
++		return temp.toString ();
++	}
++
+ 	/**
+ 	 * Funciones de uso interno. No usar directamente
+ 	 * 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000001.html">[Mihailchess-svn] r29 - trunk/MihailChessLib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>

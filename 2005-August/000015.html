@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Mihailchess-svn] r43 - trunk/MihailChessLib/com/mihail/chess
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/mihailchess-svn/2005-August/index.html" >
+   <LINK REL="made" HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r43%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508181315.j7IDFOga014929%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000014.html">
+   <LINK REL="Next"  HREF="000016.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Mihailchess-svn] r43 - trunk/MihailChessLib/com/mihail/chess</H1>
+    <B>Pedro Suarez at BerliOS</B> 
+    <A HREF="mailto:mihailchess-svn%40lists.berlios.de?Subject=Re%3A%20%5BMihailchess-svn%5D%20r43%20-%20trunk/MihailChessLib/com/mihail/chess&In-Reply-To=%3C200508181315.j7IDFOga014929%40sheep.berlios.de%3E"
+       TITLE="[Mihailchess-svn] r43 - trunk/MihailChessLib/com/mihail/chess">gauleng at berlios.de
+       </A><BR>
+    <I>Thu Aug 18 15:15:24 CEST 2005</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000014.html">[Mihailchess-svn] r42 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+        <LI>Next message: <A HREF="000016.html">[Mihailchess-svn] r44 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15">[ date ]</a>
+              <a href="thread.html#15">[ thread ]</a>
+              <a href="subject.html#15">[ subject ]</a>
+              <a href="author.html#15">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: gauleng
+Date: 2005-08-18 15:15:23 +0200 (Thu, 18 Aug 2005)
+New Revision: 43
+
+Modified:
+   trunk/MihailChessLib/com/mihail/chess/Board.java
+   trunk/MihailChessLib/com/mihail/chess/BoardStatus.java
+Log:
+Corregidos errores en el calculo de movimientos
+
+Modified: trunk/MihailChessLib/com/mihail/chess/Board.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-18 11:39:56 UTC (rev 42)
++++ trunk/MihailChessLib/com/mihail/chess/Board.java	2005-08-18 13:15:23 UTC (rev 43)
+@@ -64,6 +64,7 @@
+ 		movimientos = new VariationsTree();
+ 		posicion = posInicial;
+ 		hash.insert(posicion.getPositionKey());
++		this.calculateMoves();
+ 	}
+ 
+ 	/**
+@@ -148,8 +149,8 @@
+ 						(char) (pieza.getRank() + 1))) {
+ 					if (esLegal(pieza.getFile(), pieza.getRank(), pieza
+ 							.getFile(), (char) (pieza.getRank() + 1))) {
+-						pieza.addMove(pieza.getFile(), (char) (pieza
+-								.getRank() + 1));
++						pieza.addMove(pieza.getFile(),
++								(char) (pieza.getRank() + 1));
+ 						if (pieza.getRank() == '2'
+ 								&amp;&amp; posicion.isEmpty(pieza.getFile(),
+ 										(char) (pieza.getRank() + 2))) {
+@@ -182,8 +183,8 @@
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+ 				}
+ 				try {
+-					Piece p = posicion.getPieza((char) (pieza.getFile() + 1),
+-							(char) (pieza.getRank() - 1));
++					Piece p = posicion.getPieza((char) (pieza.getFile() - 1),
++							(char) (pieza.getRank() + 1));
+ 					if (p != null &amp;&amp; p.getSide() == Side.BLACK) {
+ 						if (esLegal(pieza.getFile(), pieza.getRank(),
+ 								(char) (pieza.getFile() - 1), (char) (pieza
+@@ -201,8 +202,8 @@
+ 						(char) (pieza.getRank() - 1))) {
+ 					if (esLegal(pieza.getFile(), pieza.getRank(), pieza
+ 							.getFile(), (char) (pieza.getRank() - 1))) {
+-						pieza.addMove(pieza.getFile(), (char) (pieza
+-								.getRank() - 1));
++						pieza.addMove(pieza.getFile(),
++								(char) (pieza.getRank() - 1));
+ 						if (pieza.getRank() == '7'
+ 								&amp;&amp; posicion.isEmpty(pieza.getFile(),
+ 										(char) (pieza.getRank() - 2))) {
+@@ -221,9 +222,9 @@
+ 							.getRank() - 1));
+ 				}
+ 				try {
+-					Piece p = posicion.getPieza((char) (pieza.getFile() - 1),
+-							(char) (pieza.getRank() + 1));
+-					if (p != null &amp;&amp; p.getSide() == Side.BLACK) {
++					Piece p = posicion.getPieza((char) (pieza.getFile() + 1),
++							(char) (pieza.getRank() - 1));
++					if (p != null &amp;&amp; p.getSide() == Side.WHITE) {
+ 						if (esLegal(pieza.getFile(), pieza.getRank(),
+ 								(char) (pieza.getFile() + 1), (char) (pieza
+ 										.getRank() - 1))) {
+@@ -236,7 +237,7 @@
+ 				try {
+ 					Piece p = posicion.getPieza((char) (pieza.getFile() - 1),
+ 							(char) (pieza.getRank() - 1));
+-					if (p != null &amp;&amp; p.getSide() == Side.BLACK) {
++					if (p != null &amp;&amp; p.getSide() == Side.WHITE) {
+ 						if (esLegal(pieza.getFile(), pieza.getRank(),
+ 								(char) (pieza.getFile() - 1), (char) (pieza
+ 										.getRank() - 1))) {
+@@ -256,8 +257,7 @@
+ 							.getFile(), destino.getRank())) {
+ 						Piece p = posicion.getPieza(destino.getFile(), destino
+ 								.getRank());
+-						if (p == null
+-								|| (p != null &amp;&amp; p.isOppositeSide(pieza)))
++						if (p == null || (p != null &amp;&amp; p.isOppositeSide(pieza)))
+ 							pieza.addMove(destino);
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+@@ -279,8 +279,7 @@
+ 						if (esLegal(pieza.getFile(), pieza.getRank(), destino
+ 								.getFile(), destino.getRank())) {
+ 							if (p == null
+-									|| (p != null &amp;&amp; p.isOppositeSide(
+-											pieza))) {
++									|| (p != null &amp;&amp; p.isOppositeSide(pieza))) {
+ 								pieza.addMove(destino);
+ 							}
+ 						}
+@@ -299,8 +298,7 @@
+ 							.getFile(), destino.getRank())) {
+ 						Piece p = posicion.getPieza(destino.getFile(), destino
+ 								.getRank());
+-						if (p == null
+-								|| (p != null &amp;&amp; p.isOppositeSide(pieza)))
++						if (p == null || (p != null &amp;&amp; p.isOppositeSide(pieza)))
+ 							pieza.addMove(destino);
+ 					}
+ 				} catch (ArrayIndexOutOfBoundsException e) {
+@@ -436,7 +434,8 @@
+ 				}
+ 				if (Piece.isOppositeSide(posicion.getTurn(), p)
+ 						&amp;&amp; (p.getType() == Type.QUEEN
+-								|| p.getType() == Type.BISHOP || (num + v.getY() == numDest
++								|| p.getType() == Type.BISHOP || (num
++								+ v.getY() == numDest
+ 								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getType() == Type.KING || (p
+ 								.getType() == Type.PAWN &amp;&amp; p.getSide() == Side.BLACK))))) {
+ 					return true;
+@@ -460,7 +459,8 @@
+ 				}
+ 				if (Piece.isOppositeSide(posicion.getTurn(), p)
+ 						&amp;&amp; (p.getType() == Type.QUEEN
+-								|| p.getType() == Type.BISHOP || (num + v.getY() == numDest
++								|| p.getType() == Type.BISHOP || (num
++								+ v.getY() == numDest
+ 								&amp;&amp; letra + v.getX() == letDest &amp;&amp; (p.getType() == Type.KING || (p
+ 								.getType() == Type.PAWN &amp;&amp; p.getSide() == Side.WHITE))))) {
+ 					return true;
+@@ -516,8 +516,8 @@
+ 	 *            Es el numero de la casilla de destino
+ 	 * @return Devuelve un objeto Movimiento o null si no esta permitido.
+ 	 */
+-	public Move move(char origenLetra, char origenNum,
+-			char destinoLetra, char destinoNum) {
++	public Move move(char origenLetra, char origenNum, char destinoLetra,
++			char destinoNum) {
+ 		Piece piezaQueMueve;
+ 		int i;
+ 		Move mov;
+@@ -548,20 +548,19 @@
+ 				// Si se entra en el siguiente caso, es que el movimiento es
+ 				// valido
+ 				if (destinoNum == piezaQueMueve.getCasillasValidas().get(i)
+-						.getFile()) {
++						.getRank()) {
+ 					mov = new Move();
+ 					mov.setCasillaOrigen(new Square(origenLetra, origenNum));
+-					mov
+-							.setCasillaDestino(new Square(destinoLetra,
+-									destinoNum));
++					mov.setCasillaDestino(new Square(destinoLetra, destinoNum));
+ 					mov.setTipoPieza(piezaQueMueve.getType());
+ 
+ 					// Si se come ponemos el contador a 0
+ 					if (!posicion.isEmpty(destinoLetra, destinoNum)) {
+ 						posicion.setHalfmoveClock(0);
+ 						hash.clearDictionary();
+-						mov.setCasillaComer(new Square(destinoLetra,
+-								destinoNum));
++						mov
++								.setCasillaComer(new Square(destinoLetra,
++										destinoNum));
+ 						mov.setTipoPiezaComida(posicion.getPieza(destinoLetra,
+ 								destinoNum).getType());
+ 						posicion.removePiece(mov.getCasillaComer());
+@@ -582,7 +581,8 @@
+ 						// correspondiente
+ 						if (Math.abs(destinoNum - origenNum) == 2) {
+ 							posicion.setEnPassant(origenLetra);
+-							mov.getFinalBoardStatus().setEnPassant(posicion.getEnPassant());
++							mov.getFinalBoardStatus().setEnPassant(
++									posicion.getEnPassant());
+ 						} else {
+ 							posicion.setEnPassant('\0');
+ 						}
+@@ -680,8 +680,7 @@
+ 					posicion.setPiece(torre, 'f', origen.getRank());
+ 				} else {
+ 					if ((destino.getFile() - origen.getFile()) == -2) {
+-						Piece torre = posicion
+-								.getPieza('a', origen.getRank());
++						Piece torre = posicion.getPieza('a', origen.getRank());
+ 						posicion.removePiece('a', origen.getRank());
+ 						posicion.setPiece(torre, 'd', origen.getRank());
+ 					}
+@@ -726,8 +725,7 @@
+ 					posicion.setPiece(torre, 'f', origen.getRank());
+ 				} else {
+ 					if ((destino.getFile() - origen.getFile()) == -2) {
+-						Piece torre = posicion
+-								.getPieza('a', origen.getRank());
++						Piece torre = posicion.getPieza('a', origen.getRank());
+ 						posicion.removePiece('a', origen.getRank());
+ 						posicion.setPiece(torre, 'd', origen.getRank());
+ 					}
+@@ -741,9 +739,9 @@
+ 						.getCasillaComer());
+ 			}
+ 			posicion.setPiece(piezaQueMueve, mov.getCasillaOrigen());
+-			
++
+ 			posicion.status.setStatus(mov.getFinalBoardStatus());
+-			
++
+ 			posicion.setTurn();
+ 			return mov;
+ 		} else {
+@@ -946,7 +944,7 @@
+ 				break;
+ 			}
+ 		}
+-		if(piezaCoronacion!=null) {
++		if (piezaCoronacion != null) {
+ 			// TODO hacer el mostrarDialogoCoronacion;
+ 			coronar = piezaCoronacion;
+ 		}
+@@ -973,31 +971,33 @@
+ 			}
+ 		} else {
+ 			Square c = new Square(destinoLetra, destinoNum);
+-			if (origenLetra == '\0' &amp;&amp; origenNum != '\0') {
+-				for (char ii = 'a'; ii &lt;= 'h'; ii++) {
+-					Piece p = posicion.getPieza(ii, origenNum);
+-					if (p.canMove(c)) {
+-						origenLetra = ii;
+-						break;
++			if (origenLetra == '\0' || origenNum == '\0') {
++				if (origenLetra == '\0' &amp;&amp; origenNum != '\0') {
++					for (char ii = 'a'; ii &lt;= 'h'; ii++) {
++						Piece p = posicion.getPieza(ii, origenNum);
++						if (p.canMove(c)) {
++							origenLetra = ii;
++							break;
++						}
+ 					}
+-				}
+-			} else if (origenLetra != '\0' &amp;&amp; origenNum == '\0') {
+-				for (char ii = '1'; ii &lt;= '8'; ii++) {
+-					Piece p = posicion.getPieza(origenLetra, ii);
+-					if (p.canMove(c)) {
+-						origenNum = ii;
+-						break;
+-					}
+-				}
+-			} else {
+-				for (char ii = '1'; ii &lt;= '8'; ii++) {
+-					for (char jj = 'a'; jj &lt;= 'h'; jj++) {
+-						Piece p = posicion.getPieza(jj, ii);
++				} else if (origenLetra != '\0' &amp;&amp; origenNum == '\0') {
++					for (char ii = '1'; ii &lt;= '8'; ii++) {
++						Piece p = posicion.getPieza(origenLetra, ii);
+ 						if (p.canMove(c)) {
+ 							origenNum = ii;
+ 							break;
+ 						}
+ 					}
++				} else {
++					for (char ii = '1'; ii &lt;= '8'; ii++) {
++						for (char jj = 'a'; jj &lt;= 'h'; jj++) {
++							Piece p = posicion.getPieza(jj, ii);
++							if (p.canMove(c)) {
++								origenNum = ii;
++								break;
++							}
++						}
++					}
+ 				}
+ 			}
+ 		}
+
+Modified: trunk/MihailChessLib/com/mihail/chess/BoardStatus.java
+===================================================================
+--- trunk/MihailChessLib/com/mihail/chess/BoardStatus.java	2005-08-18 11:39:56 UTC (rev 42)
++++ trunk/MihailChessLib/com/mihail/chess/BoardStatus.java	2005-08-18 13:15:23 UTC (rev 43)
+@@ -74,8 +74,10 @@
+ 		switch (c) {
+ 		case WHITE:
+ 			enroque[0][0] = b;
++			return;
+ 		case BLACK:
+ 			enroque[1][0] = b;
++			return;
+ 		}
+ 		throw new AssertionError(&quot;El Bando solo puede ser BLANCO o NEGRO: &quot;
+ 				+ this);
+@@ -104,8 +106,10 @@
+ 		switch (c) {
+ 		case WHITE:
+ 			enroque[0][1] = b;
++			return;
+ 		case BLACK:
+ 			enroque[1][1] = b;
++			return;
+ 		}
+ 		throw new AssertionError(&quot;El Bando solo puede ser BLANCO o NEGRO: &quot;
+ 				+ this);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000014.html">[Mihailchess-svn] r42 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+	<LI>Next message: <A HREF="000016.html">[Mihailchess-svn] r44 - trunk/MihailChessLib/com/mihail/chess
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#15">[ date ]</a>
+              <a href="thread.html#15">[ thread ]</a>
+              <a href="subject.html#15">[ subject ]</a>
+              <a href="author.html#15">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/mihailchess-svn">More information about the Mihailchess-svn
+mailing list</a><br>
+</body></html>
